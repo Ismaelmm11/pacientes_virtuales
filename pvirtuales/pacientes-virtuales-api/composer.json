@@ -1,0 +1,9 @@
+{
+    "name": "project/pacientes-virtuales-api",
+    "description": "Backend API for the Virtual Patients project.",
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    }
+}
