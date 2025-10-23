@@ -24,3 +24,6 @@ Thumbs.db
 # Archivos de IDE
 .idea/
 .vscode/
+
+#Ignorar archivo de test
+/public/index_.php
