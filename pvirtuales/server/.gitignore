@@ -1,0 +1,26 @@
+# pvirtuales/server/.gitignore
+
+# Ignorar todas las dependencias de Composer
+/vendor/
+
+# Ignorar el archivo de variables de entorno (¡MUY IMPORTANTE!)
+/.env
+
+# Ignorar archivos de registro
+/storage/logs/*.log
+
+# Ignorar caché y sesiones
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+
+# Ignorar dependencias de Node.js
+/node_modules/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de IDE
+.idea/
+.vscode/

@@ -30,3 +30,19 @@ CREATE TABLE questions (
 
     FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+-- ========= Tabla Respuestas =========
+-- Almacena la respuesta del alumno, la puntuación que obtuvo y el feedback final.
+
+CREATE TABLE answers (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    test_attempt_id INT UNSIGNED NOT NULL,
+    question_id INT UNSIGNED NOT NULL,
+    given_answer TEXT NOT NULL,
+    is_correct BOOLEAN NULL,
+    score DECIMAL(5, 2) NULL, -- La puntuación obtenida por el alumno
+    feedback TEXT NULL, -- El feedback final (automático o del profesor)
+
+    FOREIGN KEY (test_attempt_id) REFERENCES test_attempts(id) ON DELETE CASCADE,
+    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
+) ENGINE=InnoDB;

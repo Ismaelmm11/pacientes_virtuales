@@ -1,0 +1,59 @@
+# .github/workflows/deploy.yml
+
+name: Desplegar Proyecto en OVH
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-laravel:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Descarga TODO el repositorio (Ejemplos, SQL, pvirtuales)
+      - name: 1. Descargar el código
+        uses: actions/checkout@v4
+
+      # 2. Configura PHP
+      - name: 2. Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      # 3. Instala dependencias, DENTRO de la carpeta correcta
+      - name: 3. Instalar dependencias de Composer
+        run: composer install --no-dev --optimize-autoloader
+        # ESTA LÍNEA ES CRUCIAL:
+        working-directory: ./pvirtuales/server
+
+      # 4. Despliega el núcleo de Laravel
+      - name: 4. Desplegar archivos del servidor a /server
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          
+          # ESTA LÍNEA ES CRUCIAL:
+          local-dir: ./pvirtuales/server/
+          server-dir: /server/
+          
+          # Excluimos la carpeta 'public' (relativa al 'local-dir')
+          exclude: |
+            public/**
+            .git*
+            .github/**
+
+      # 5. Despliega la carpeta pública
+      - name: 5. Desplegar archivos públicos a /www
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          
+          # ESTA LÍNEA ES CRUCIAL:
+          local-dir: ./pvirtuales/server/public/
+          server-dir: /www/
