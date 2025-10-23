@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function() {
         fetch("/api/hello") // La ruta es relativa al dominio
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Error de Red: ' + response.statusText);
+                    throw new Error('Error: ' + response.statusText);
                 }
                 return response.json(); // Convierte la respuesta a JSON
             })
