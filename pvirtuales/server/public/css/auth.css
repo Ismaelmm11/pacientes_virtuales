@@ -1,0 +1,272 @@
+/* ============================================
+   LAYOUT DE AUTENTICACIÓN
+   ============================================ */
+.auth-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 30px 20px;
+    width: 100%;
+}
+
+.auth-card {
+    background-color: var(--color-bg-light);
+    color: var(--color-text);
+    max-width: 500px;
+    width: 100%;
+    padding: 50px 40px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    gap: 0; /* Sin gap, usamos margins específicos */
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.auth-header h2 {
+    color: var(--color-primary-darker);
+    font-size: 32px;
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.auth-header p {
+    color: var(--color-text-muted);
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* ============================================
+   FORMULARIOS
+   ============================================ */
+.form-group {
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--color-primary-darker);
+    font-size: 15px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius);
+    font-size: 15px;
+    transition: var(--transition);
+    background-color: #FAFBFC;
+    color: var(--color-text);
+}
+
+/* Estilos específicos para select */
+select.form-control {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235DADE2' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 45px;
+}
+
+/* Estilos específicos para input date */
+input[type="date"].form-control {
+    cursor: pointer;
+}
+
+input[type="date"].form-control::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: opacity(0.6);
+    transition: var(--transition);
+}
+
+input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
+    filter: opacity(1);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background-color: var(--color-bg-light);
+    box-shadow: 0 0 0 4px rgba(93, 173, 226, 0.1);
+}
+
+.form-control::placeholder {
+    color: #AEB6BF;
+}
+
+/* Estilos para opciones del select */
+select.form-control option {
+    padding: 10px;
+    background-color: white;
+    color: var(--color-text);
+}
+
+select.form-control option:first-child {
+    color: #AEB6BF;
+}
+
+/* ============================================
+   MENSAJES DE ERROR EN FORMULARIOS
+   ============================================ */
+.form-error {
+    color: var(--color-error);
+    font-size: 13px;
+    margin-top: 8px;
+    display: block;
+}
+
+.form-control.is-invalid {
+    border-color: var(--color-error);
+    background-color: #FADBD8;
+}
+
+/* ============================================
+   EMAIL DISPLAY (para mostrar email confirmado)
+   ============================================ */
+.email-display {
+    background: linear-gradient(135deg, #EBF5FB 0%, #D6EAF8 100%);
+    padding: 18px 20px;
+    border-radius: var(--border-radius);
+    margin: 25px 0;
+    border-left: 4px solid var(--color-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.email-display p {
+    margin: 0 0 6px 0;
+}
+
+.email-display strong {
+    color: var(--color-primary-darker);
+    font-size: 17px;
+}
+
+/* ============================================
+   BOTONES
+   ============================================ */
+.btn {
+    display: inline-block;
+    width: 100%;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    margin-top: 10px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary-darker) 100%);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ============================================
+   ENLACES SECUNDARIOS
+   ============================================ */
+.auth-footer {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 2px solid var(--color-secondary-light);
+}
+
+.auth-footer a {
+    color: var(--color-primary-dark);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-footer a:hover {
+    color: var(--color-primary-darker);
+    text-decoration: underline;
+}
+
+/* ============================================
+   PÁGINA DE ERROR (invalid-token)
+   ============================================ */
+.error-icon {
+    text-align: center;
+    font-size: 70px;
+    margin-bottom: 25px;
+    line-height: 1;
+}
+
+.error-content {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.error-content h1 {
+    color: var(--color-primary-darker);
+    font-size: 26px;
+    margin-bottom: 18px;
+    font-weight: 700;
+}
+
+.error-content p {
+    color: var(--color-text-muted);
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 576px) {
+    .auth-wrapper {
+        padding: 20px 15px;
+    }
+    
+    .auth-card {
+        padding: 35px 25px;
+    }
+    
+    .auth-header h2 {
+        font-size: 26px;
+    }
+    
+    .auth-header p {
+        font-size: 14px;
+    }
+    
+    .btn {
+        padding: 14px 20px;
+        font-size: 15px;
+    }
+    
+    .form-control {
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+}

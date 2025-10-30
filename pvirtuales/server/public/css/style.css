@@ -1,11 +1,91 @@
-/* server/public/css/style.css */
-body {
-    background-color: #2c3e50; /* Un fondo azul oscuro */
-    color: #ecf0f1;           /* Un texto casi blanco */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+/* ============================================
+   VARIABLES CSS (Paleta de colores - Azules Claros)
+   ============================================ */
+:root {
+    --color-primary: #5DADE2;      /* Azul claro principal */
+    --color-primary-dark: #3498DB; /* Azul medio hover */
+    --color-primary-darker: #2E86C1; /* Azul oscuro para textos */
+    --color-secondary: #EBF5FB;    /* Azul muy claro (fondo body) */
+    --color-secondary-light: #D6EAF8; /* Azul pastel */
+    --color-success: #52BE80;      /* Verde éxito suave */
+    --color-error: #EC7063;        /* Rojo error suave */
+    --color-text: #1B4F72;         /* Texto azul oscuro */
+    --color-text-muted: #5D6D7E;   /* Texto secundario */
+    --color-border: #AED6F1;       /* Bordes azul claro */
+    --color-bg-light: #FFFFFF;     /* Fondo blanco */
+    
+    --border-radius: 12px;
+    --transition: all 0.3s ease;
+    --shadow-sm: 0 2px 8px rgba(93, 173, 226, 0.1);
+    --shadow-md: 0 4px 16px rgba(93, 173, 226, 0.15);
+    --shadow-lg: 0 8px 24px rgba(93, 173, 226, 0.2);
+}
+
+/* ============================================
+   RESET Y ESTILOS BASE
+   ============================================ */
+* {
     margin: 0;
-    font-family: sans-serif;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #EBF5FB 0%, #D6EAF8 100%);
+    color: var(--color-text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ============================================
+   UTILIDADES GENERALES
+   ============================================ */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* ============================================
+   MENSAJES DE FEEDBACK
+   ============================================ */
+.message {
+    padding: 15px 20px;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    font-weight: 500;
+    display: block;
+}
+
+.message.success {
+    background-color: #D5F4E6;
+    border-left: 4px solid var(--color-success);
+    color: #1E8449;
+}
+
+.message.error {
+    background-color: #FADBD8;
+    border-left: 4px solid var(--color-error);
+    color: #C0392B;
+}
+
+/* ============================================
+   ENLACES
+   ============================================ */
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+a:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
 }

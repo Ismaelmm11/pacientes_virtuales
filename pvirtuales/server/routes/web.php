@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 
 use App\Models\User;
+use App\Http\Controllers\Auth\RegistrationController;
 
 Route::get('/test-db', function () {
     
@@ -22,3 +23,18 @@ Route::get('/test-db', function () {
 Route::get('/', function () {
     return view('pages.index');
 });
+
+
+// --- RUTAS DEL NUEVO FLUJO DE REGISTRO ---
+
+// 1. Mostrar la página para introducir el email
+Route::get('/iniciar-registro', [RegistrationController::class, 'showPreRegisterForm'])->name('register.start');
+
+// 2. Procesar el envío del email y mandar el enlace
+Route::post('/iniciar-registro', [RegistrationController::class, 'sendInviteLink'])->name('register.sendlink');
+
+// 3. Mostrar el formulario de registro final (desde el enlace del email)
+Route::get('/registrar/{token}', [RegistrationController::class, 'showRegistrationForm'])->name('register.form');
+
+// 4. Crear la cuenta de usuario
+Route::post('/registrar', [RegistrationController::class, 'createAccount'])->name('register.create');
