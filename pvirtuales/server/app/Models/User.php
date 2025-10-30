@@ -2,31 +2,36 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
+     * Deshabilitamos 'updated_at' porque no existe en la tabla
+     */
+    const UPDATED_AT = null;
+
+    /**
+     * Los atributos que se pueden asignar masivamente
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
+        'birth_date',
+        'gender',
+        'role_id'
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
+     * Los atributos que deben ocultarse en las serializaciones
      */
     protected $hidden = [
         'password',
@@ -34,15 +39,80 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Los atributos que deben ser convertidos a tipos nativos
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'birth_date' => 'date',
+    ];
+
+    /**
+     * ============================================
+     * RELACIONES
+     * ============================================
+     */
+    
+    /**
+     * Un usuario pertenece a un rol
+     */
+    public function role(): BelongsTo
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * ============================================
+     * ACCESSORS
+     * ============================================
+     */
+    
+    /**
+     * Obtiene el nombre completo del usuario
+     * Uso: $user->full_name
+     */
+    protected function fullName(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => "{$this->first_name} {$this->last_name}"
+        );
+    }
+
+    /**
+     * ============================================
+     * MÉTODOS HELPER (ROLES)
+     * ============================================
+     */
+    
+    /**
+     * Verifica si el usuario tiene un rol específico por ID
+     */
+    public function hasRole(int $roleId): bool
+    {
+        return $this->role_id === $roleId;
+    }
+
+    /**
+     * Verifica si el usuario es administrador
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole(Role::ADMIN_ID);
+    }
+
+    /**
+     * Verifica si el usuario es profesor
+     */
+    public function isTeacher(): bool
+    {
+        return $this->hasRole(Role::TEACHER_ID);
+    }
+
+    /**
+     * Verifica si el usuario es estudiante
+     */
+    public function isStudent(): bool
+    {
+        return $this->hasRole(Role::STUDENT_ID);
     }
 }
