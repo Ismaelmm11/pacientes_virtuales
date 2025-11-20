@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
@@ -20,7 +21,6 @@ class RegistrationController extends Controller
      */
     public function showPreRegisterForm()
     {
-        // CAMBIADO: Ahora busca en 'resources/views/pages/auth/pre-register.blade.php'
         return view('pages.auth.pre-register');
     }
 
@@ -29,8 +29,6 @@ class RegistrationController extends Controller
      */
     public function sendInviteLink(Request $request)
     {
-// ... (lógica sin cambios) ...
-// ... (lógica sin cambios) ...
         $request->validate([
             'email' => 'required|email|unique:users,email'
         ], [
@@ -68,12 +66,10 @@ class RegistrationController extends Controller
 
         // 2. Comprobar si es válida o ha caducado (ej. 24 horas)
         if (!$invite || $invite->created_at < Carbon::now()->subHours(24)) {
-            // CAMBIADO: Ahora busca en 'resources/views/pages/auth/invalid-token.blade.php'
             return view('pages.auth.invalid-token');
         }
 
         // 3. Si es válida, mostramos el formulario
-        // CAMBIADO: Ahora busca en 'resources/views/pages/auth/register.blade.php'
         return view('pages.auth.register', [
             'email' => $invite->email,
             'token' => $invite->token
@@ -85,8 +81,6 @@ class RegistrationController extends Controller
      */
     public function createAccount(Request $request)
     {
-// ... (lógica sin cambios) ...
-// ... (lógica sin cambios) ...
         $request->validate([
             'token' => 'required|string',
             'first_name' => 'required|string|max:100',
@@ -98,13 +92,10 @@ class RegistrationController extends Controller
         $invite = UserInvitation::where('token', $request->token)->first();
 
         if (!$invite) {
-            // CAMBIADO: Ahora busca en 'resources/views/pages/auth/invalid-token.blade.php'
             return view('pages.auth.invalid-token');
         }
 
         // 3. Crear el usuario en la tabla 'users'
-// ... (lógica sin cambios) ...
-// ... (lógica sin cambios) ...
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -112,8 +103,7 @@ class RegistrationController extends Controller
             'password' => Hash::make($request->password), // Hashear la contraseña
             'birth_date' => $request->birth_date,
             'gender' => $request->gender,
-            'role_id' => 1, // Por defecto, rol 1 = STUDENT
-            // Añade aquí cualquier otro campo obligatorio (birth_date, gender, etc.)
+            'role_id' => Role::STUDENT_ID, // Por defecto, rol 1 = STUDENT
         ]);
 
         // 4. Borrar la invitación (para que el enlace no se use de nuevo)

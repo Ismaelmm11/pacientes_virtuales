@@ -1,0 +1,152 @@
+/* Layout principal del Chat */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 80px); /* Restamos un poco para márgenes */
+    max-width: 1000px;
+    margin: 20px auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* Cabecera del Chat */
+.chat-header {
+    padding: 15px 25px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.patient-info h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--color-primary-darker);
+}
+
+.patient-info span {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.ai-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: white;
+    text-transform: uppercase;
+}
+
+/* Colores de las IAs para el badge */
+.bg-gpt { background-color: #10A37F; }
+.bg-claude { background-color: #D97757; }
+.bg-gemini { background-color: #4E86F6; }
+.bg-grok { background-color: #000000; }
+
+/* Área de Mensajes (Scroll) */
+.chat-messages {
+    flex: 1;
+    padding: 25px;
+    overflow-y: auto;
+    background: #fdfdfd;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Burbujas de Chat */
+.message {
+    max-width: 80%;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.5;
+    position: relative;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mensaje de la IA (Paciente) */
+.message.assistant {
+    align-self: flex-start;
+    background-color: #f0f2f5;
+    color: #333;
+    border-bottom-left-radius: 2px;
+}
+
+.message.assistant .author {
+    font-size: 0.75rem;
+    color: #666;
+    margin-bottom: 4px;
+    display: block;
+    font-weight: 600;
+}
+
+/* Mensaje del Usuario (Doctor) */
+.message.user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+/* Área de Entrada (Input) */
+.chat-input-area {
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: none; /* No permitir redimensionar */
+    height: 50px; /* Altura fija inicial */
+    font-family: inherit;
+}
+
+.chat-input:focus {
+    border-color: var(--color-primary);
+}
+
+.btn-send {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: var(--color-primary);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.btn-send:hover {
+    transform: scale(1.1);
+    background: var(--color-primary-dark);
+}
+
+/* Botón de salir */
+.btn-exit {
+    color: #e74c3c;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
