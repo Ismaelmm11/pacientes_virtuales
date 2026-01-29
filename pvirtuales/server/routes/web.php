@@ -24,7 +24,7 @@ Route::get('/test-db', function () {
 // Página de Inicio (Dashboard)
 Route::get('/', function () {
     return view('pages.index');
-});
+})->name('home');
 
 
 // --- RUTAS DE LOGIN Y LOGOUT (NUEVAS) ---
@@ -44,6 +44,16 @@ Route::post('/registrar', [RegistrationController::class, 'createAccount'])->nam
 // --- RUTAS DE SIMULACIÓN (NUEVAS) ---
 // Estas rutas están protegidas: solo funcionan si el usuario ha iniciado sesión
 Route::middleware(['auth'])->group(function () {
+
+    // --- CREAR PACIENTES (Coming Soon) ---
+    Route::get('/crear-pacientes', function () {
+        return view('pages.patients.coming-soon');
+    })->name('patients.create');
+
+    // --- CONSULTAS (Dashboard de IAs) ---
+    Route::get('/consultas', function () {
+        return view('pages.consultations.index');
+    })->name('consultations.index');
     
     // 1. Iniciar el chat (Carga la vista del chat con el historial inicial)
     // Captura qué IA ({ai}) y qué paciente ({patient}) ha elegido el usuario

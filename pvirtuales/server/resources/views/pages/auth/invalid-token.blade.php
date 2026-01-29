@@ -29,7 +29,7 @@
             </div>
 
             <div class="auth-footer">
-                <a href="/pacientes_virtuales">← Volver al inicio</a>
+                <a href="{{ route('home') }}">← Volver al inicio</a>
             </div>
         </div>
     </div>

@@ -58,7 +58,7 @@
             <div class="auth-footer">
                 <p>¿No tienes cuenta? <a href="{{ route('register.start') }}">Regístrate aquí</a></p>
                 <br>
-                <a href="/pacientes_virtuales">← Volver al inicio</a>
+                <a href="{{ route('home') }}">← Volver al inicio</a>
             </div>
         </div>
     </div>

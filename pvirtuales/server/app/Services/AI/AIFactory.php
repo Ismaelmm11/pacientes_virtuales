@@ -13,6 +13,7 @@ class AIFactory
             'claude' => new ClaudeService(),
             'gemini' => new GeminiService(),
             'grok' => new GrokService(),
+            'mistral' => new MistralService(),
             default => throw new Exception("Modelo de IA no soportado: $modelKey"),
         };
     }
