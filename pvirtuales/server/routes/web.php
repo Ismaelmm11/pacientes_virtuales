@@ -47,12 +47,12 @@ Route::middleware(['auth'])->group(function () {
 
     // --- CREAR PACIENTES (Coming Soon) ---
     Route::get('/crear-pacientes', function () {
-        return view('patients.create');
+        return view('pages.patients.create');
     })->name('patients.create');
 
     // --- CONSULTAS (Dashboard de IAs) ---
     Route::get('/consultas', function () {
-        return view('consultation.index');
+        return view('pages.consultation.index');
     })->name('consultation.dashboard');
     
     // 1. Iniciar el chat (Carga la vista del chat con el historial inicial)
