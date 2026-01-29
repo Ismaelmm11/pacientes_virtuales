@@ -53,7 +53,7 @@ Route::middleware(['auth'])->group(function () {
     // --- CONSULTAS (Dashboard de IAs) ---
     Route::get('/consultas', function () {
         return view('pages.consultations.index');
-    })->name('consultations.index');
+    })->name('consultations.dashboard');
     
     // 1. Iniciar el chat (Carga la vista del chat con el historial inicial)
     // Captura qué IA ({ai}) y qué paciente ({patient}) ha elegido el usuario
