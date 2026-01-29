@@ -47,13 +47,13 @@ Route::middleware(['auth'])->group(function () {
 
     // --- CREAR PACIENTES (Coming Soon) ---
     Route::get('/crear-pacientes', function () {
-        return view('pages.patients.coming-soon');
+        return view('patients.create');
     })->name('patients.create');
 
     // --- CONSULTAS (Dashboard de IAs) ---
     Route::get('/consultas', function () {
-        return view('pages.consultations.index');
-    })->name('consultations.dashboard');
+        return view('consultation.index');
+    })->name('consultation.dashboard');
     
     // 1. Iniciar el chat (Carga la vista del chat con el historial inicial)
     // Captura qué IA ({ai}) y qué paciente ({patient}) ha elegido el usuario
