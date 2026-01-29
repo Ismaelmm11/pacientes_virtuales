@@ -56,4 +56,4 @@ jobs:
           
           # ESTA LÍNEA ES CRUCIAL:
           local-dir: ./pvirtuales/server/public/
-          server-dir: /www/
+          server-dir: /www/pacientes_virtuales/

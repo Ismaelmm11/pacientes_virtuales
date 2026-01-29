@@ -1,0 +1,101 @@
+pacientes-virtuales-api/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── AuthController.php
+│   │   │   └── PatientController.php
+│   │   └── Middleware/
+│   │       ├── Authenticate.php
+│   │       └── Cors.php
+│   ├── Models/
+│   │   ├── User.php
+│   │   └── Patient.php
+│   ├── Repositories/
+│   │   ├── Contracts/
+│   │   │   ├── PatientRepositoryInterface.php
+│   │   │   └── UserRepositoryInterface.php
+│   │   └── Eloquent/
+│   │       ├── PatientRepository.php
+│   │       └── UserRepository.php
+│   ├── Services/
+│   │   ├── AuthService.php
+│   │   ├── PatientService.php
+│   │   └── SimulationService.php
+│   └── Utils/
+│       ├── DateHelper.php
+│       └── StringHelper.php
+├── config/
+│   ├── app.php
+│   ├── database.php
+│   └── services.php
+├── database/
+│   ├── factories/
+│   ├── migrations/
+│   └── seeds/
+├── public/
+│   ├── index.php
+│   └──.htaccess
+├── routes/
+│   └── api.php
+├── storage/
+│   ├── app/
+│   ├── framework/
+│   └── logs/
+├── tests/
+│   ├── Feature/
+│   └── Unit/
+├── vendor/
+├──.env
+├── composer.json
+└── composer.lock
+
+
+pacientes-virtuales-app/
+└── lib/
+    ├── core/
+    │   ├── api/
+    │   │   └── dio_client.dart
+    │   ├── constants/
+    │   │   └── app_constants.dart
+    │   ├── navigation/
+    │   │   └── app_router.dart
+    │   ├── storage/
+    │   │   └── storage_service.dart
+    │   ├── theme/
+    │   │   └── app_theme.dart
+    │   └── widgets/
+    │       ├── primary_button.dart
+    │       └── loading_indicator.dart
+    ├── features/
+    │   ├── auth/
+    │   │   ├── data/
+    │   │   │   ├── models/
+    │   │   │   ├── repositories/
+    │   │   │   └── data_providers/
+    │   │   └── presentation/
+    │   │       ├── bloc/
+    │   │       ├── screens/
+    │   │       └── widgets/
+    │   ├── patient_chat/
+    │   │   ├── data/
+    │   │   │   ├── models/
+    │   │   │   │   ├── message_model.dart
+    │   │   │   │   └── patient_profile_model.dart
+    │   │   │   ├── repositories/
+    │   │   │   │   └── patient_chat_repository_impl.dart
+    │   │   │   └── data_providers/
+    │   │   │       └── patient_chat_api_provider.dart
+    │   │   └── presentation/
+    │   │       ├── bloc/
+    │   │       │   ├── patient_chat_bloc.dart
+    │   │       │   ├── patient_chat_event.dart
+    │   │       │   └── patient_chat_state.dart
+    │   │       ├── screens/
+    │   │       │   └── patient_chat_screen.dart
+    │   │       └── widgets/
+    │   │           ├── chat_bubble.dart
+    │   │           └── message_input_bar.dart
+    │   └── test_results/
+    │       ├── data/
+    │       └── presentation/
+    └── main.dart
