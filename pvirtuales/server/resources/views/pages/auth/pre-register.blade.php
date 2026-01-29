@@ -49,7 +49,7 @@
             </form>
 
             <div class="auth-footer">
-                <a href="/">← Volver al inicio</a>
+                <a href="/pacientes_virtuales">← Volver al inicio</a>
             </div>
         </div>
     </div>

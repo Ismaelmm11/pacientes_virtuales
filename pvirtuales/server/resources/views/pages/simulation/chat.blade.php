@@ -20,7 +20,7 @@
             </div>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <span class="ai-badge bg-{{ $aiModel }}">IA: {{ strtoupper($aiModel) }}</span>
-                <a href="/" class="btn-exit">Finalizar Consulta ✕</a>
+                <a href="/pacientes_virtuales" class="btn-exit">Finalizar Consulta ✕</a>
             </div>
         </div>
 
