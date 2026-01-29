@@ -52,7 +52,7 @@ Route::middleware(['auth'])->group(function () {
 
     // --- CONSULTAS (Dashboard de IAs) ---
     Route::get('/consultas', function () {
-        return view('pages.consultation.index');
+        return view('pages.consultation.dashboard');
     })->name('consultation.dashboard');
     
     // 1. Iniciar el chat (Carga la vista del chat con el historial inicial)
