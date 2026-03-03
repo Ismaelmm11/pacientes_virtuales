@@ -1,0 +1,332 @@
+/*
+|--------------------------------------------------------------------------
+| select-mode.css — Selección de modo de creación de paciente
+|--------------------------------------------------------------------------
+|
+| Diseño de pantalla dividida en dos mitades verticales.
+| Cada mitad es un enlace gigante que ocupa toda la altura disponible.
+|
+| ESTRUCTURA:
+|   .mode-split        → Contenedor flex que divide la pantalla en 2
+|   .mode-half         → Cada mitad (básico / avanzado)
+|   .mode-half-inner   → Contenido centrado dentro de la mitad
+|   .mode-divider      → Separador central con "o"
+|
+*/
+
+/* ==========================================================================
+   CONTENEDOR PRINCIPAL
+   ========================================================================== */
+
+/*
+ * Ocupa todo el espacio disponible bajo la topbar.
+ * content-area tiene padding, lo cancelamos con márgenes negativos
+ * para que las mitades lleguen hasta los bordes.
+ */
+.mode-split {
+    display: flex;
+    align-items: stretch;
+    /* Cancelar el padding del content-area para llegar a los bordes */
+    margin: calc(-1 * var(--spacing-xl));
+    /* Altura mínima para que llene la pantalla aunque haya poco contenido */
+    min-height: calc(100vh - 64px); /* 64px = topbar */
+    position: relative;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   MITADES
+   ========================================================================== */
+
+/*
+ * Cada mitad es un <a> que ocupa el 50% del ancho.
+ * Fondo con color oscuro + hover con elevación de brillo.
+ */
+.mode-half {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    overflow: hidden;
+    transition: filter 0.3s ease;
+    cursor: pointer;
+}
+
+/* Hover: la mitad se ilumina ligeramente */
+.mode-half:hover {
+    filter: brightness(1.08);
+}
+
+/* Hover: el CTA baja un poco con la flecha */
+.mode-half:hover .mode-half-cta {
+    gap: 12px;
+}
+
+/* --- Modo Básico: fondo oscuro azul verdoso --- */
+.mode-basic {
+    background: #1E3A4C;
+}
+
+/* --- Modo Avanzado: fondo oscuro morado azulado --- */
+.mode-advanced {
+    background: #1E2A45;
+}
+
+/* ==========================================================================
+   BLOB DECORATIVO
+   Círculo de gradiente suave en la esquina superior de cada mitad.
+   ========================================================================== */
+
+.mode-half-blob {
+    position: absolute;
+    top: -120px;
+    right: -120px;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.mode-basic .mode-half-blob {
+    background: radial-gradient(circle, rgba(91, 231, 196, 0.18) 0%, transparent 65%);
+}
+
+.mode-advanced .mode-half-blob {
+    background: radial-gradient(circle, rgba(79, 193, 233, 0.15) 0%, transparent 65%);
+}
+
+/* ==========================================================================
+   CONTENIDO INTERIOR
+   ========================================================================== */
+
+/*
+ * Columna centrada con el contenido de cada mitad.
+ * z-index > 0 para estar por encima del blob.
+ */
+.mode-half-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 60px 48px;
+    max-width: 420px;
+    width: 100%;
+}
+
+/* --- Tag de categoría (Recomendado / Control total) --- */
+.mode-half-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.8);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.mode-half-tag i {
+    width: 13px;
+    height: 13px;
+}
+
+/* Color del tag según modo */
+.mode-basic .mode-half-tag {
+    background: rgba(91, 231, 196, 0.15);
+    border-color: rgba(91, 231, 196, 0.3);
+    color: #5BE7C4;
+}
+
+.mode-advanced .mode-half-tag {
+    background: rgba(79, 193, 233, 0.15);
+    border-color: rgba(79, 193, 233, 0.3);
+    color: #4FC1E9;
+}
+
+/* --- Título grande --- */
+.mode-half-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.4rem, 4vw, 3.6rem);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -1.5px;
+    color: white;
+    margin: 0;
+}
+
+/* --- Descripción corta --- */
+.mode-half-desc {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.65;
+    margin: 0;
+}
+
+/* --- Lista de características --- */
+.mode-half-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mode-half-features li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 500;
+}
+
+.mode-half-features li i {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Icono check con color del modo */
+.mode-basic .mode-half-features li i {
+    color: #5BE7C4;
+}
+
+.mode-advanced .mode-half-features li i {
+    color: #4FC1E9;
+}
+
+/* --- Botón CTA al final --- */
+.mode-half-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: white;
+    transition: gap 0.2s ease, background 0.2s ease;
+}
+
+.mode-half-cta i {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.2s ease;
+}
+
+.mode-half:hover .mode-half-cta i {
+    transform: translateX(4px);
+}
+
+/* Color del CTA según modo */
+.mode-basic .mode-half-cta {
+    background: rgba(91, 231, 196, 0.2);
+    border: 1px solid rgba(91, 231, 196, 0.35);
+}
+
+.mode-basic:hover .mode-half-cta {
+    background: rgba(91, 231, 196, 0.3);
+}
+
+.mode-advanced .mode-half-cta {
+    background: rgba(79, 193, 233, 0.2);
+    border: 1px solid rgba(79, 193, 233, 0.35);
+}
+
+.mode-advanced:hover .mode-half-cta {
+    background: rgba(79, 193, 233, 0.3);
+}
+
+/* ==========================================================================
+   DIVISOR CENTRAL
+   ========================================================================== */
+
+/*
+ * Línea vertical con un círculo "o" en el centro.
+ * Se posiciona absoluto encima de las dos mitades.
+ */
+.mode-divider {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mode-divider span {
+    width: 36px;
+    height: 36px;
+    background: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    box-shadow: var(--shadow-md);
+    /* Línea vertical detrás del círculo */
+    position: relative;
+}
+
+/* Línea vertical que atraviesa el divisor */
+.mode-divider span::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.1);
+    z-index: -1;
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+/* En tablet/móvil las mitades se apilan verticalmente */
+@media (max-width: 768px) {
+    .mode-split {
+        flex-direction: column;
+        min-height: auto;
+    }
+
+    .mode-half {
+        min-height: 50vh;
+    }
+
+    /* El divisor pasa a ser horizontal */
+    .mode-divider {
+        top: 50%;
+        left: 50%;
+    }
+
+    .mode-divider span::before {
+        width: 100vw;
+        height: 1px;
+    }
+
+    .mode-half-inner {
+        padding: 40px 28px;
+    }
+
+    .mode-half-title {
+        font-size: 2.4rem;
+    }
+}

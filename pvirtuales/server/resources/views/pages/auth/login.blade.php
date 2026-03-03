@@ -1,13 +1,18 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión - Pacientes Virtuales</title>
-    <link href="{{ asset('css/style.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/auth.css') }}" rel="stylesheet">
-</head>
-<body>
+{{--
+|--------------------------------------------------------------------------
+| Página de Inicio de Sesión
+|--------------------------------------------------------------------------
+|
+| Formulario de autenticación para usuarios registrados.
+| Usa el layout maestro y el CSS de autenticación.
+|
+--}}
+<x-layouts.app title="Iniciar Sesión">
+    {{-- CSS específico de páginas de auth --}}
+    <x-slot:styles>
+        <link href="{{ asset('css/auth.css') }}" rel="stylesheet">
+    </x-slot:styles>
+
     <div class="auth-wrapper">
         <div class="auth-card">
             <div class="auth-header">
@@ -62,5 +67,4 @@
             </div>
         </div>
     </div>
-</body>
-</html>
+</x-layouts.app>

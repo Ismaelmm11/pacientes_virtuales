@@ -1,0 +1,372 @@
+/*
+|--------------------------------------------------------------------------
+| Estilos - Formulario Crear Paciente (Avanzado) — Wizard
+|--------------------------------------------------------------------------
+|
+| Extiende create-patient.css con: barra de progreso, navegación de pasos,
+| listas dinámicas ampliadas (antecedentes, medicación, vicios, contradicciones),
+| reglas de interacción, eventos de cierre.
+|
+*/
+
+/* ==================== WIZARD: BARRA DE PROGRESO ==================== */
+
+.wizard-progress {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 40px;
+    margin: -10px 0 0;
+    background: #f8f6fc;
+    border-bottom: 1px solid #ede6f5;
+    overflow-x: auto;
+}
+
+.wizard-step-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 18px 10px 14px;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    min-width: 90px;
+    transition: all 0.2s;
+}
+
+.wizard-step-indicator::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 3px;
+    background: #764ba2;
+    border-radius: 3px 3px 0 0;
+    transition: width 0.3s;
+}
+
+.wizard-step-indicator.active::after {
+    width: 80%;
+}
+
+.wizard-step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e0dae8;
+    color: #7f8c8d;
+    font-weight: 700;
+    font-size: 0.88rem;
+    transition: all 0.3s;
+}
+
+.wizard-step-indicator.active .wizard-step-number {
+    background: #764ba2;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(118, 75, 162, 0.35);
+}
+
+.wizard-step-indicator.completed .wizard-step-number {
+    background: #27ae60;
+    color: #fff;
+}
+
+.wizard-step-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #95a5a6;
+    text-align: center;
+    transition: color 0.2s;
+}
+
+.wizard-step-indicator.active .wizard-step-label {
+    color: #764ba2;
+}
+
+.wizard-step-indicator.completed .wizard-step-label {
+    color: #27ae60;
+}
+
+/* ==================== WIZARD: PANELES ==================== */
+
+.wizard-panel {
+    display: none;
+}
+
+.wizard-panel.active {
+    display: block;
+    animation: wizardFadeIn 0.3s ease;
+}
+
+@keyframes wizardFadeIn {
+    from { opacity: 0; transform: translateX(15px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* ==================== WIZARD: NAVEGACIÓN INFERIOR ==================== */
+
+.wizard-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 25px;
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.wizard-nav-info {
+    font-size: 0.85rem;
+    color: #95a5a6;
+}
+
+.wizard-nav-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-wizard-prev,
+.btn-wizard-next {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-wizard-prev {
+    background: #f0f0f0;
+    color: #555;
+}
+
+.btn-wizard-prev:hover {
+    background: #e0e0e0;
+}
+
+.btn-wizard-next {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+}
+
+.btn-wizard-next:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(118, 75, 162, 0.3);
+}
+
+.btn-wizard-prev svg,
+.btn-wizard-next svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ==================== LISTAS DINÁMICAS AMPLIADAS ==================== */
+
+/* --- Síntomas avanzados (6 campos en grid 2 columnas) --- */
+
+.symptom-fields-advanced {
+    grid-template-columns: 1fr 1fr;
+}
+
+.symptom-fields-advanced .lie-field {
+    grid-column: 1 / -1;
+}
+
+/* --- Antecedentes (enfermedad + hace cuánto + revelación) --- */
+
+.antecedent-item .item-fields {
+    grid-template-columns: 2fr 1fr 1fr;
+}
+
+.antecedent-item .lie-field {
+    grid-column: 1 / -1;
+}
+
+/* --- Medicación (nombre + dosis + frecuencia + adherencia + revelación) --- */
+
+.medication-item .item-fields {
+    grid-template-columns: 1fr 1fr;
+}
+
+.medication-item .lie-field {
+    grid-column: 1 / -1;
+}
+
+.medication-item .item-fields-row2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+    grid-column: 1 / -1;
+}
+
+/* --- Vicios (nombre + cantidad + revelación) --- */
+
+.vice-item .item-fields {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.vice-item .lie-field {
+    grid-column: 1 / -1;
+}
+
+/* --- Contradicciones --- */
+
+.contradiction-item .item-fields {
+    grid-template-columns: 1fr;
+}
+
+.contradiction-item .item-fields-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 8px;
+    grid-column: 1 / -1;
+}
+
+.contradiction-item .item-fields-row:last-child {
+    grid-template-columns: 1fr;
+}
+
+/* --- Reglas de interacción --- */
+
+.rule-item .item-fields {
+    grid-template-columns: 1fr 1fr;
+}
+
+.rule-item .rule-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: #764ba2;
+    font-weight: 700;
+    padding-bottom: 4px;
+}
+
+/* --- Eventos de cierre --- */
+
+.closure-item .item-fields {
+    grid-template-columns: 1fr;
+}
+
+.closure-item .item-fields-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* --- Gatillos emocionales --- */
+
+.trigger-item .item-fields {
+    grid-template-columns: 1fr 1fr;
+}
+
+/* --- Antecedentes familiares (textarea simple en avanzado) --- */
+
+.family-history-note {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    font-style: italic;
+    margin-bottom: 8px;
+}
+
+/* --- Adherencia checkbox --- */
+
+.adherence-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 4px;
+}
+
+.adherence-wrapper input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #764ba2;
+}
+
+.adherence-wrapper label {
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    color: #555 !important;
+    margin-bottom: 0 !important;
+}
+
+.adherence-detail {
+    display: none;
+    margin-top: 6px;
+}
+
+.adherence-detail.visible {
+    display: block;
+}
+
+/* ==================== SECCIÓN CONTEXT BOX ==================== */
+
+.context-box {
+    background: #fffbf0;
+    border: 1px solid #f5deb3;
+    border-left: 4px solid #f0ad4e;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 22px;
+    font-size: 0.88rem;
+    color: #856404;
+}
+
+.context-box strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* ==================== RESPONSIVE WIZARD ==================== */
+
+@media (max-width: 768px) {
+    .wizard-progress {
+        padding: 0 15px;
+        gap: 5px;
+    }
+
+    .wizard-step-indicator {
+        min-width: 60px;
+        padding: 12px 5px 10px;
+    }
+
+    .wizard-step-label {
+        font-size: 0.65rem;
+    }
+
+    .wizard-nav {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .wizard-nav-buttons {
+        width: 100%;
+    }
+
+    .btn-wizard-prev,
+    .btn-wizard-next {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .antecedent-item .item-fields,
+    .medication-item .item-fields-row2,
+    .vice-item .item-fields,
+    .contradiction-item .item-fields-row,
+    .rule-item .item-fields,
+    .closure-item .item-fields-row,
+    .trigger-item .item-fields {
+        grid-template-columns: 1fr;
+    }
+}

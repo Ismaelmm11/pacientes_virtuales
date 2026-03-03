@@ -1,0 +1,1059 @@
+/*
+|--------------------------------------------------------------------------
+| create-patient.css — Formulario de Creación de Pacientes
+|--------------------------------------------------------------------------
+|
+| Estilos del formulario de modo básico y avanzado.
+| Se integra con app.blade.php (sidebar + topbar ya resueltos).
+|
+| CONTENIDO:
+|   1.  Layout (columna principal + sidebar lateral)
+|   2.  Badge de modo en topbar
+|   3.  Alertas de validación
+|   4.  Secciones del formulario
+|   5.  Campos (input, select, textarea)
+|   6.  Tooltips de ayuda (?)
+|   7.  Selector de acompañante
+|   8.  Grid de personalidad
+|   9.  Preview de personalidad y sliders
+|   10. Sliders
+|   11. Listas dinámicas
+|   12. Campo mentira (reveal)
+|   13. Ejemplo de coherencia
+|   14. Botonera de acción
+|   15. Responsive
+|
+*/
+
+/* ==========================================================================
+   1. LAYOUT
+   ========================================================================== */
+
+/*
+ * Layout de dos columnas:
+ *   - Columna principal: formulario (flex: 1, ancho máximo 720px)
+ *   - Sidebar lateral: índice de secciones + info (240px fijo)
+ */
+.create-patient-layout {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+}
+
+/* Columna principal */
+.create-patient-main {
+    flex: 1;
+    min-width: 0; /* Evita overflow en flex */
+}
+
+/* ==========================================================================
+   2. BADGE DE MODO EN TOPBAR
+   ========================================================================== */
+
+.mode-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(91, 231, 196, 0.12);
+    border: 1px solid rgba(91, 231, 196, 0.3);
+    color: #2BA88A;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.mode-badge i {
+    width: 12px;
+    height: 12px;
+}
+
+/* ==========================================================================
+   3. ALERTAS DE VALIDACIÓN
+   ========================================================================== */
+
+.cp-alert-error {
+    display: flex;
+    gap: 14px;
+    background: rgba(231, 76, 60, 0.06);
+    border: 1.5px solid rgba(231, 76, 60, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    animation: shakeAlert 0.45s ease;
+}
+
+@keyframes shakeAlert {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-5px); }
+    40%       { transform: translateX(5px); }
+    60%       { transform: translateX(-3px); }
+    80%       { transform: translateX(3px); }
+}
+
+.cp-alert-icon {
+    flex-shrink: 0;
+    color: var(--color-danger);
+    margin-top: 2px;
+}
+
+.cp-alert-icon i {
+    width: 18px;
+    height: 18px;
+}
+
+.cp-alert-body strong {
+    display: block;
+    color: var(--color-danger);
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.cp-alert-body ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.cp-alert-body li {
+    font-size: 0.85rem;
+    color: #c0392b;
+    margin-bottom: 3px;
+}
+
+/* ==========================================================================
+   4. SECCIONES DEL FORMULARIO
+   ========================================================================== */
+
+/*
+ * Cada sección es una card blanca con borde y sombra sutil.
+ * Separadas por gap en vez de margin-bottom para uniformidad.
+ */
+.cp-section {
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    scroll-margin-top: 80px; /* Para que el scroll activo no quede tapado por la topbar */
+}
+
+.cp-section:last-of-type {
+    margin-bottom: 0;
+}
+
+/* Cabecera de sección */
+.cp-section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.cp-section-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.cp-section-icon i {
+    width: 18px;
+    height: 18px;
+}
+
+.cp-section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+}
+
+.cp-section-desc {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin: 0 0 24px 48px; /* Alinea con el texto del título (icono 36px + gap 12px) */
+    line-height: 1.5;
+}
+
+/* Divisor interno entre grupos de campos */
+.cp-section-divider {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: 24px 0;
+}
+
+/* ==========================================================================
+   5. CAMPOS DE FORMULARIO
+   ========================================================================== */
+
+.cp-form-group {
+    margin-bottom: 20px;
+}
+
+.cp-form-group:last-child {
+    margin-bottom: 0;
+}
+
+/* Label con tooltip inline */
+.cp-label-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 7px;
+}
+
+.cp-label-row label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+}
+
+/* Grid de dos columnas para campos relacionados */
+.cp-form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+/* Grid de tres columnas */
+.cp-form-row-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+/* Inputs y selects */
+.cp-form-group input[type="text"],
+.cp-form-group input[type="number"],
+.cp-form-group select,
+.cp-form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: var(--color-text);
+    background: var(--color-surface);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cp-form-group input:focus,
+.cp-form-group select:focus,
+.cp-form-group textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(91, 231, 196, 0.18);
+}
+
+.cp-form-group input::placeholder,
+.cp-form-group textarea::placeholder {
+    color: var(--color-text-subtle);
+}
+
+.cp-form-group textarea {
+    min-height: 90px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+/* Requerido y hint */
+.required {
+    color: var(--color-danger);
+    font-weight: 700;
+}
+
+.hint {
+    color: var(--color-text-subtle);
+    font-weight: 400;
+    font-size: 0.82rem;
+}
+
+/* ==========================================================================
+   6. TOOLTIPS DE AYUDA (?)
+   ========================================================================== */
+
+.help-tooltip {
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.help-tooltip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    transition: background 0.2s, color 0.2s;
+    user-select: none;
+    line-height: 1;
+}
+
+.help-tooltip-icon:hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.help-tooltip-bubble {
+    display: none;
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    transform: translateX(-50%);
+    width: 300px;
+    background: var(--color-text);
+    color: #ecf0f1;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    font-size: 0.82rem;
+    font-weight: 400;
+    line-height: 1.55;
+    box-shadow: var(--shadow-lg);
+    z-index: 200;
+    pointer-events: none;
+}
+
+/* Flecha del bocadillo */
+.help-tooltip-bubble::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 7px solid transparent;
+    border-top-color: var(--color-text);
+}
+
+/* Bocadillo hacia abajo si no hay espacio arriba */
+.help-tooltip-bubble.below {
+    bottom: auto;
+    top: calc(100% + 10px);
+}
+
+.help-tooltip-bubble.below::after {
+    top: auto;
+    bottom: 100%;
+    border-top-color: transparent;
+    border-bottom-color: var(--color-text);
+}
+
+.help-tooltip.active .help-tooltip-bubble {
+    display: block;
+    animation: tooltipFadeIn 0.15s ease;
+    pointer-events: auto;
+}
+
+@keyframes tooltipFadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.help-tooltip-bubble strong {
+    display: block;
+    color: #5BE7C4;
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+
+.help-tooltip-bubble .example {
+    background: rgba(255, 255, 255, 0.07);
+    border-left: 2px solid #5BE7C4;
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin-top: 6px;
+    font-size: 0.79rem;
+}
+
+.help-tooltip-bubble .example + .example {
+    margin-top: 4px;
+}
+
+/* ==========================================================================
+   7. SELECTOR DE ACOMPAÑANTE
+   ========================================================================== */
+
+.cp-attendee-selector {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.cp-attendee-option {
+    flex: 1;
+    position: relative;
+}
+
+.cp-attendee-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.cp-attendee-option label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 18px 14px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    text-align: center;
+}
+
+.cp-attendee-option label .attendee-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+}
+
+.cp-attendee-option label .attendee-label {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--color-text);
+}
+
+.cp-attendee-option label .attendee-desc {
+    font-size: 0.77rem;
+    color: var(--color-text-muted);
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+.cp-attendee-option input:checked + label {
+    border-color: var(--color-primary);
+    background: rgba(91, 231, 196, 0.06);
+    box-shadow: 0 0 0 3px rgba(91, 231, 196, 0.18);
+}
+
+.cp-attendee-option label:hover {
+    border-color: var(--color-primary-light);
+    background: rgba(91, 231, 196, 0.04);
+}
+
+/* Campos del acompañante (ocultos por defecto) */
+.cp-companion-fields {
+    display: none;
+    background: var(--color-surface-alt);
+    border: 1.5px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.cp-companion-fields.visible {
+    display: block;
+    animation: slideDown 0.25s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.cp-companion-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ==========================================================================
+   8. GRID DE PERSONALIDAD
+   ========================================================================== */
+
+.cp-personality-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.cp-personality-option {
+    position: relative;
+}
+
+.cp-personality-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.cp-personality-option label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 8px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.86rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.cp-personality-option input:checked + label {
+    border-color: var(--color-primary);
+    background: rgba(91, 231, 196, 0.08);
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.cp-personality-option label:hover {
+    border-color: var(--color-primary-light);
+    color: var(--color-text);
+}
+
+/* ==========================================================================
+   9. PREVIEW DE PERSONALIDAD Y SLIDERS
+   ========================================================================== */
+
+.cp-preview-box {
+    background: var(--color-surface-alt);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    line-height: 1.55;
+    display: none;
+}
+
+.cp-preview-box.visible {
+    display: block;
+    animation: tooltipFadeIn 0.2s ease;
+}
+
+.cp-preview-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-primary-dark);
+    margin-bottom: 6px;
+}
+
+/* Toggle para personalizar texto del preview */
+.cp-custom-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    color: var(--color-primary-dark);
+    cursor: pointer;
+    margin-top: 8px;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.cp-custom-toggle:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+.cp-custom-field {
+    margin-top: 8px;
+    display: none;
+}
+
+.cp-custom-field textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    min-height: 70px;
+    resize: vertical;
+    font-family: inherit;
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+.cp-custom-field textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(91, 231, 196, 0.18);
+}
+
+/* ==========================================================================
+   10. SLIDERS
+   ========================================================================== */
+
+.cp-slider-group {
+    background: var(--color-surface-alt);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    margin-bottom: 20px;
+}
+
+.cp-slider-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.cp-slider-header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cp-slider-header label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+}
+
+.cp-slider-value {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Track */
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--color-border);
+    outline: none;
+    margin: 6px 0;
+}
+
+/* Thumb */
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(91, 231, 196, 0.4);
+    transition: transform 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    cursor: pointer;
+    border: none;
+}
+
+.cp-slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--color-text-subtle);
+    margin-top: 2px;
+}
+
+/* ==========================================================================
+   11. LISTAS DINÁMICAS
+   ========================================================================== */
+
+.cp-dynamic-list {
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-alt);
+    overflow: hidden;
+}
+
+/* Estado vacío */
+.cp-dynamic-list:empty::before {
+    content: 'Pulsa el botón de abajo para añadir elementos';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 56px;
+    color: var(--color-text-subtle);
+    font-size: 0.85rem;
+    font-style: italic;
+    padding: 16px;
+}
+
+.cp-dynamic-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: start;
+    padding: 16px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.cp-dynamic-item:last-child {
+    border-bottom: none;
+}
+
+.cp-dynamic-item-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.cp-dynamic-item-field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-bottom: 5px;
+}
+
+.cp-dynamic-item-field input,
+.cp-dynamic-item-field select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    font-family: inherit;
+    background: var(--color-surface);
+    color: var(--color-text);
+    transition: border-color 0.2s;
+}
+
+.cp-dynamic-item-field input:focus,
+.cp-dynamic-item-field select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(91, 231, 196, 0.15);
+}
+
+/* Botón eliminar fila */
+.cp-btn-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    color: var(--color-text-subtle);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    margin-top: 22px; /* Alinea con el primer input (label + gap) */
+    flex-shrink: 0;
+}
+
+.cp-btn-remove:hover {
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--color-danger);
+}
+
+.cp-btn-remove i {
+    width: 14px;
+    height: 14px;
+}
+
+/* Botón añadir elemento */
+.cp-btn-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 16px;
+    border: 1.5px dashed var(--color-border);
+    background: transparent;
+    color: var(--color-text-muted);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: inherit;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    margin-top: 10px;
+}
+
+.cp-btn-add:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary-dark);
+    background: rgba(91, 231, 196, 0.05);
+}
+
+.cp-btn-add i {
+    width: 15px;
+    height: 15px;
+}
+
+/* ==========================================================================
+   12. CAMPO MENTIRA (reveal = miente)
+   ========================================================================== */
+
+.cp-lie-field {
+    display: none;
+    grid-column: 1 / -1;
+    margin-top: 4px;
+    padding: 12px;
+    background: rgba(231, 76, 60, 0.04);
+    border: 1.5px solid rgba(231, 76, 60, 0.2);
+    border-radius: var(--radius-md);
+}
+
+.cp-lie-field.visible {
+    display: block;
+    animation: slideDown 0.2s ease;
+}
+
+.cp-lie-field label {
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    color: var(--color-danger) !important;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.cp-lie-field input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1.5px solid rgba(231, 76, 60, 0.3);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    font-family: inherit;
+    background: var(--color-surface);
+}
+
+.cp-lie-field input:focus {
+    outline: none;
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.12);
+}
+
+.cp-lie-hint {
+    font-size: 0.75rem;
+    color: var(--color-danger);
+    margin-top: 4px;
+}
+
+/* ==========================================================================
+   13. EJEMPLO DE COHERENCIA
+   ========================================================================== */
+
+.cp-coherence-block {
+    background: var(--color-surface-alt);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.cp-coherence-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.coherence-ok {
+    color: #27ae60 !important;
+    font-size: 0.85rem !important;
+}
+
+.coherence-bad {
+    color: var(--color-danger) !important;
+    font-size: 0.85rem !important;
+}
+
+/* ==========================================================================
+   14. BOTONERA DE ACCIÓN
+   ========================================================================== */
+
+.cp-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 24px;
+    margin-top: 8px;
+    border-top: 1.5px solid var(--color-border);
+}
+
+/* ==========================================================================
+   15. SIDEBAR LATERAL
+   ========================================================================== */
+
+.create-patient-sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 88px; /* topbar 64px + spacing */
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Card del sidebar */
+.cp-sidebar-card {
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+}
+
+.cp-sidebar-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-text-subtle);
+    margin-bottom: 12px;
+}
+
+/* Navegación del sidebar */
+.cp-sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.cp-sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: var(--radius-md);
+    font-size: 0.83rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.cp-sidebar-link i {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.cp-sidebar-link:hover {
+    background: var(--color-surface-alt);
+    color: var(--color-text);
+}
+
+.cp-sidebar-link.active {
+    background: rgba(91, 231, 196, 0.1);
+    color: #2BA88A;
+    font-weight: 600;
+}
+
+/* Card info del modo */
+.cp-sidebar-info {
+    text-align: center;
+}
+
+.cp-sidebar-info-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    color: white;
+}
+
+.cp-sidebar-info-icon i {
+    width: 18px;
+    height: 18px;
+}
+
+.cp-sidebar-info-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 6px;
+}
+
+.cp-sidebar-info-text {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    line-height: 1.55;
+}
+
+/* ==========================================================================
+   16. RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+    .create-patient-sidebar {
+        display: none; /* Ocultamos el sidebar en tablet */
+    }
+}
+
+@media (max-width: 768px) {
+    .cp-section {
+        padding: 20px 18px;
+    }
+
+    .cp-form-row,
+    .cp-form-row-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .cp-attendee-selector {
+        flex-direction: column;
+    }
+
+    .cp-personality-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cp-dynamic-item-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .cp-coherence-row {
+        grid-template-columns: 1fr;
+    }
+
+    .cp-btn-remove {
+        margin-top: 0;
+        align-self: flex-end;
+    }
+
+    .cp-form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .cp-form-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

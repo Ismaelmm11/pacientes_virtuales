@@ -22,3 +22,10 @@ class AppServiceProvider extends ServiceProvider
         //
     }
 }
+
+
+/*##########################################################################
+
+ARCHIVO CREADO POR DEFECTO POR LARAVEL, NO ELIMINAR NI MODIFICAR A MENOS QUE SEPAS LO QUE HACES.
+
+##########################################################################*/

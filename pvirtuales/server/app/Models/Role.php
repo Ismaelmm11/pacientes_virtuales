@@ -6,9 +6,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Modelo para la gestión de roles de usuario (Estudiante, Profesor, Admin).
+ * * @property int $id
+ * @property string $name Nombre del rol.
+ */
+
 class Role extends Model
 {
     use HasFactory;
+
+    public $timestamps = false;
 
     /**
      * Deshabilitamos 'updated_at' porque no existe en la tabla
@@ -39,7 +47,7 @@ class Role extends Model
      * RELACIONES
      * ============================================
      */
-    
+
     /**
      * Un rol tiene muchos usuarios
      */

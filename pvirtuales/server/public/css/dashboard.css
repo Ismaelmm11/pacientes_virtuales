@@ -1,0 +1,124 @@
+/*
+|--------------------------------------------------------------------------
+| dashboard.css — Dashboard del Profesor
+|--------------------------------------------------------------------------
+|
+| Estilos específicos del dashboard del profesor.
+| Los componentes base (stat-card, card, tabla, badges)
+| ya están definidos en style.css y se reutilizan aquí.
+|
+| CONTENIDO:
+|   1. Tabla de pacientes (filas, nombre, descripción)
+|   2. Botones de acción de fila (ojo, test, publicar, eliminar)
+|   3. Topbar de bienvenida
+|
+*/
+
+/* ==========================================================================
+   1. TABLA DE PACIENTES
+   ========================================================================== */
+
+/*
+ * Nombre del paciente en la tabla — peso visual mayor
+ * que el resto de celdas para que destaque.
+ */
+.patient-name {
+    font-weight: 600;
+    color: var(--color-text);
+    font-size: 0.92rem;
+    line-height: 1.3;
+}
+
+/*
+ * Descripción del paciente debajo del nombre.
+ * Texto secundario pequeño en gris.
+ */
+.patient-desc {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+    font-style: italic;
+
+    /* Truncar si es muy largo */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+}
+
+/* ==========================================================================
+   2. BOTONES DE ACCIÓN DE FILA
+   ========================================================================== */
+
+/*
+ * Contenedor de los botones de acción al final de cada fila.
+ * Flex para alinearlos horizontalmente.
+ */
+.row-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+}
+
+/*
+ * Botón de acción individual.
+ * Círculo pequeño con icono, fondo transparente por defecto.
+ * Cambia a fondo gris en hover.
+ */
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.btn-action i {
+    width: 15px;
+    height: 15px;
+}
+
+/* Hover neutro (ver, test) */
+.btn-action:hover {
+    background: var(--color-surface-alt);
+    color: var(--color-text);
+}
+
+/*
+ * Variante éxito — botón de publicar.
+ * En hover se vuelve verde.
+ */
+.btn-action-success:hover {
+    background: rgba(91, 231, 196, 0.15);
+    color: #2BA88A;
+}
+
+/*
+ * Variante peligro — botón de eliminar.
+ * En hover se vuelve rojo.
+ */
+.btn-action-danger:hover {
+    background: rgba(231, 76, 60, 0.12);
+    color: var(--color-danger);
+}
+
+/* ==========================================================================
+   3. AJUSTES DE TOPBAR PARA EL DASHBOARD
+   ========================================================================== */
+
+/*
+ * El saludo "Bienvenido, [nombre]" usa un emoji 👋.
+ * Ajustamos el line-height para que el emoji no descuadre el texto.
+ */
+.topbar-title {
+    line-height: 1.3;
+}

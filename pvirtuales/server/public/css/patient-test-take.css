@@ -1,0 +1,366 @@
+/* =================================================================
+ * patient-test-take.css
+ * Estilos para la vista del estudiante respondiendo el test
+ * ================================================================= */
+
+.test-take-wrapper {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+}
+
+/* --- Cabecera --- */
+.test-take-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.test-take-header h1 {
+    font-size: 1.6rem;
+    color: #2c3e50;
+    margin: 0 0 8px;
+}
+
+.test-take-case {
+    color: #5DADE2;
+    font-weight: 500;
+    font-size: 1rem;
+    margin: 0 0 6px;
+}
+
+.test-take-info {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* --- Tarjeta de pregunta --- */
+.tq-card {
+    background: white;
+    border: 1px solid #e8edf2;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    transition: box-shadow 0.2s;
+}
+
+.tq-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.tq-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.tq-number {
+    background: #5DADE2;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.tq-type {
+    font-size: 0.75rem;
+    background: #f0f4f8;
+    color: #7f8c8d;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+.tq-points {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    font-weight: 500;
+}
+
+.tq-text {
+    font-size: 1rem;
+    color: #2c3e50;
+    line-height: 1.6;
+    margin: 0 0 16px;
+}
+
+/* --- Opciones (MC y V/F) --- */
+.tq-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tq-tf {
+    flex-direction: row;
+    gap: 12px;
+}
+
+.tq-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border: 2px solid #e8edf2;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.tq-option:hover {
+    border-color: #5DADE2;
+    background: #f8fcff;
+}
+
+.tq-option:has(input:checked) {
+    border-color: #5DADE2;
+    background: #ebf5fb;
+}
+
+.tq-option input[type="radio"] {
+    display: none;
+}
+
+.tq-option-letter {
+    background: #e8edf2;
+    color: #34495e;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.tq-option:has(input:checked) .tq-option-letter {
+    background: #5DADE2;
+    color: white;
+}
+
+.tq-option-text {
+    font-size: 0.9rem;
+    color: #2c3e50;
+}
+
+.tq-tf .tq-option {
+    flex: 1;
+    justify-content: center;
+    font-weight: 500;
+}
+
+/* --- Estados tras corrección --- */
+.option-selected-correct {
+    border-color: #27ae60 !important;
+    background: #d5f5e3 !important;
+}
+
+.option-selected-correct .tq-option-letter {
+    background: #27ae60 !important;
+    color: white !important;
+}
+
+.option-selected-incorrect {
+    border-color: #e74c3c !important;
+    background: #fdecea !important;
+}
+
+.option-selected-incorrect .tq-option-letter {
+    background: #e74c3c !important;
+    color: white !important;
+}
+
+.option-is-correct:not(.option-selected-correct) {
+    border-color: #27ae60 !important;
+    border-style: dashed !important;
+}
+
+.option-is-correct:not(.option-selected-correct) .tq-option-letter {
+    background: #27ae60 !important;
+    color: white !important;
+}
+
+/* Desactivar hover tras corrección */
+.tq-option:has(input:disabled) {
+    cursor: default;
+    pointer-events: none;
+}
+
+/* --- Pregunta abierta --- */
+.tq-open-answer {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px 14px;
+    border: 2px solid #e8edf2;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.tq-open-answer:focus {
+    border-color: #5DADE2;
+    outline: none;
+}
+
+.tq-open-answer:disabled {
+    background: #f8fafc;
+    color: #7f8c8d;
+}
+
+/* --- Feedback --- */
+.tq-feedback {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.feedback-correct {
+    background: #d5f5e3;
+    color: #1e8449;
+    border-left: 4px solid #27ae60;
+}
+
+.feedback-incorrect {
+    background: #fdecea;
+    color: #922b21;
+    border-left: 4px solid #e74c3c;
+}
+
+.feedback-neutral {
+    background: #f0f4f8;
+    color: #5d6d7e;
+    border-left: 4px solid #5DADE2;
+}
+
+.feedback-unanswered {
+    background: #fef9e7;
+    color: #7d6608;
+    border-left: 4px solid #f39c12;
+}
+
+/* --- Botón corregir --- */
+.test-actions {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.btn-correct {
+    background: #5DADE2;
+    color: white;
+    border: none;
+    padding: 14px 40px;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.btn-correct:hover {
+    background: #3498DB;
+}
+
+.btn-correct:active {
+    transform: scale(0.98);
+}
+
+/* --- Resultado global --- */
+.test-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 35px;
+    background: white;
+    border: 2px solid #5DADE2;
+    border-radius: 16px;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.result-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.result-label {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.result-value {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #5DADE2;
+    line-height: 1;
+}
+
+.result-total {
+    font-size: 1rem;
+    color: #95a5a6;
+}
+
+.btn-back-home {
+    background: #5DADE2;
+    color: white;
+    text-decoration: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    display: inline-block;
+}
+
+.btn-back-home:hover {
+    background-color: #3498DB;
+}
+
+/* --- Estado vacío --- */
+.test-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #7f8c8d;
+}
+
+.test-empty p {
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 600px) {
+    .test-take-wrapper {
+        padding: 20px 14px 40px;
+    }
+
+    .tq-card {
+        padding: 18px;
+    }
+
+    .tq-tf {
+        flex-direction: column;
+    }
+
+    .result-value {
+        font-size: 2.4rem;
+    }
+}

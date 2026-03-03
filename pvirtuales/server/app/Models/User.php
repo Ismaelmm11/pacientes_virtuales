@@ -2,15 +2,31 @@
 
 namespace App\Models;
 
+use Date;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Modelo de usuario principal para la autenticación y perfiles.
+ * * @property int $id
+ * @property string $first_name Nombre del usuario.
+ * @property string $last_name Apellidos del usuario.
+ * @property string $email Correo electrónico único para login.
+ * @property string $password Contraseña hasheada.
+ * @property Date $birth_date Fecha de nacimiento del usuario.
+ * @property string $gender Género del usuario (opcional).
+ * @property int $role_id Referencia al rol asignado.
+ * @property-read string $full_name Accessor para nombre y apellidos.
+ */
+
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
+
+    public $timestamps = false;
 
     /**
      * Deshabilitamos 'updated_at' porque no existe en la tabla
@@ -52,7 +68,7 @@ class User extends Authenticatable
      * RELACIONES
      * ============================================
      */
-    
+
     /**
      * Un usuario pertenece a un rol
      */
@@ -66,7 +82,7 @@ class User extends Authenticatable
      * ACCESSORS
      * ============================================
      */
-    
+
     /**
      * Obtiene el nombre completo del usuario
      * Uso: $user->full_name
@@ -74,7 +90,7 @@ class User extends Authenticatable
     protected function fullName(): Attribute
     {
         return Attribute::make(
-            get: fn () => "{$this->first_name} {$this->last_name}"
+            get: fn() => "{$this->first_name} {$this->last_name}"
         );
     }
 
@@ -83,7 +99,7 @@ class User extends Authenticatable
      * MÉTODOS HELPER (ROLES)
      * ============================================
      */
-    
+
     /**
      * Verifica si el usuario tiene un rol específico por ID
      */

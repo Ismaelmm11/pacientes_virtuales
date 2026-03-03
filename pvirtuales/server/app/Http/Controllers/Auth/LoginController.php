@@ -6,10 +6,18 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+
+/**
+ * Gestiona el proceso de autenticación de usuarios existentes.
+ * * Este controlador se encarga de mostrar el formulario de acceso,
+ * validar las credenciales mediante Auth::attempt y gestionar 
+ * el cierre seguro de sesiones regenerando tokens.
+ */
 class LoginController extends Controller
 {
     /**
      * Muestra el formulario de login.
+     * * @return \Illuminate\View\View Vista del formulario de acceso.
      */
     public function showLoginForm()
     {
@@ -18,6 +26,8 @@ class LoginController extends Controller
 
     /**
      * Procesa el intento de autenticación.
+     * * @param \Illuminate\Http\Request $request Petición con los campos 'email' y 'password'.
+     * @return \Illuminate\Http\RedirectResponse Redirección al dashboard o vuelta al formulario con errores.
      */
     public function login(Request $request)
     {
@@ -45,7 +55,9 @@ class LoginController extends Controller
     }
 
     /**
-     * Cierra la sesión del usuario.
+     * Cierra la sesión del usuario de forma segura.
+     * * @param \Illuminate\Http\Request $request Petición actual para cerrar la sesión.
+     * @return \Illuminate\Http\RedirectResponse Redirección al inicio después de cerrar sesión.
      */
     public function logout(Request $request)
     {
