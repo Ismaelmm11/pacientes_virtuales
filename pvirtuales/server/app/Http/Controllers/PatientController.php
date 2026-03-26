@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Patient;
 use App\Http\Requests\StorePatientRequest;
+use App\Http\Requests\UpdatePatientRequest;
 use App\Services\PatientService;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Subject;
 
 /**
  * Gestiona el CRUD de Pacientes Virtuales (Casos Clínicos).
@@ -57,7 +59,12 @@ class PatientController extends Controller
      */
     public function createBasic()
     {
-        return view('pages.patients.create-basic');
+        session()->forget('_old_input'); // <- añadir
+        $subjects = Subject::where('created_by_user_id', Auth::id())
+            ->orderBy('name')
+            ->get();
+
+        return view('pages.patients.create-basic', compact('subjects'));
     }
 
     /**
@@ -65,6 +72,7 @@ class PatientController extends Controller
      */
     public function createAdvanced()
     {
+        session()->forget('_old_input'); // <- añadir
         return view('pages.patients.create-advanced');
     }
 
@@ -109,28 +117,87 @@ class PatientController extends Controller
             abort(403);
         }
 
-        // Verificar que tiene al menos 1 pregunta en el test
+        // DESPUBLICAR — sin validaciones
+        if ($patient->is_published) {
+            $patient->update(['is_published' => false]);
+            return redirect()
+                ->route('teacher.patients.preview', $patient)
+                ->with('success', 'Paciente despublicado. Ya no está disponible para consultas.');
+        }
+
+        // PUBLICAR — con validaciones existentes
         if (!$patient->hasTest()) {
             return redirect()
                 ->route('teacher.patients.test', $patient)
                 ->with('error', 'Debes crear al menos 1 pregunta en el test antes de publicar.');
         }
 
+        if ($patient->randomize_questions) {
+            $error = $patient->validateRandomConfig();
+            if ($error) {
+                return redirect()
+                    ->route('teacher.patients.test', $patient)
+                    ->with('error', $error);
+            }
+        }
+
         $patient->update(['is_published' => true]);
 
         return redirect()
-            ->route('teacher.patients.index')
+            ->route('teacher.patients.preview', $patient)
             ->with('success', 'Paciente publicado. Ya está disponible para consultas.');
     }
+
+
+
+    public function edit(Patient $patient)
+    {
+        if ($patient->created_by_user_id !== Auth::id())
+            abort(403);
+
+        $patient->load(['identity', 'psychology', 'knowledgeBase', 'conversationLogic', 'coherenceExamples']);
+
+        $subjects = Subject::where('created_by_user_id', Auth::id())
+            ->orderBy('name')
+            ->get();
+
+        // Pre-rellena old() para que los partials funcionen sin cambios.
+        session()->put('_old_input', $this->patientService->extractFormData($patient));
+
+        $view = $patient->mode === 'basic' ? 'pages.patients.edit-basic' : 'pages.patients.edit-advanced';
+        return view($view, compact('patient', 'subjects'));
+    }
+
+    public function update(UpdatePatientRequest $request, Patient $patient)
+    {
+        if ($patient->created_by_user_id !== Auth::id())
+            abort(403);
+
+        $this->patientService->updatePatient($request->validated(), $patient);
+
+        return redirect()
+            ->route('teacher.patients.preview', $patient)
+            ->with('success', 'Paciente actualizado. El prompt ha sido regenerado.');
+    }
+
 
     /**
      * Elimina un paciente y todos sus datos relacionados.
      * Solo el creador del paciente puede eliminarlo.
      */
-    public function destroy(Patient $patient)
+    public function destroy(Patient $patient, $origen)
     {
         if ($patient->created_by_user_id !== Auth::id()) {
             abort(403);
+        }
+
+        if ($origen === 'dashboard') {
+            $redirectRoute = route('teacher.dashboard');
+        } else if ($origen === 'index') {
+
+            $redirectRoute = route('teacher.patients.index');
+        } else {
+            $redirectRoute = route('teacher.patients.preview', $patient);
         }
 
         $patient->delete();

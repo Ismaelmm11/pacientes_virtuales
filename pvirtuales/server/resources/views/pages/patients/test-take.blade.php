@@ -1,118 +1,299 @@
 {{--
 |--------------------------------------------------------------------------
-| Test de Evaluación — Vista del Estudiante
+| Test de Evaluación — Vista del Alumno (una pregunta a la vez)
 |--------------------------------------------------------------------------
 |
-| Se muestra tras finalizar la simulación. El estudiante responde las
-| preguntas creadas por el profesor para evaluar su razonamiento clínico.
-|
-| De momento las respuestas NO se guardan en base de datos.
-| Se corrigen en el cliente (JS) para dar feedback inmediato.
+| El alumno responde las preguntas de una en una con navegación prev/next.
+| Soporta tres tipos: opción múltiple, verdadero/falso y pregunta abierta.
 |
 --}}
-<x-layouts.app title="Test — {{ $patient->case_title }}">
-    <x-slot:styles>
-        <link href="{{ asset('css/patient-test-take.css') }}" rel="stylesheet">
-    </x-slot:styles>
+<x-layouts.app>
 
-    <div class="test-take-wrapper">
+    <x-slot name="title">Cuestionario — {{ $patient->case_title }}</x-slot>
 
-        {{-- Cabecera --}}
-        <div class="test-take-header">
-            <h1>📝 Test de Evaluación</h1>
-            <p class="test-take-case">{{ $patient->case_title }}</p>
-            <p class="test-take-info">Responde a las siguientes preguntas basándote en la consulta que acabas de realizar.</p>
+    <x-slot name="styles">
+        <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/modal.css') }}" rel="stylesheet">
+    </x-slot>
+
+    <x-slot name="topbar">
+        <div class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-title">Cuestionario de Evaluación</div>
+                <div class="topbar-subtitle">{{ $patient->case_title }}</div>
+            </div>
         </div>
+    </x-slot>
 
-        {{-- Preguntas --}}
+    <div class="dashboard-content">
+
         @if($questions->isEmpty())
-            <div class="test-empty">
-                <p>Este paciente no tiene test de evaluación configurado.</p>
-                <a href="{{ route('home') }}" class="btn-back-home">Volver al Inicio</a>
+            <div class="empty-state">
+                <i data-lucide="clipboard-x"></i>
+                <p>Este paciente no tiene preguntas de evaluación configuradas.</p>
+                <a href="{{ route('student.patients.index') }}" class="btn btn-primary">Volver a Pacientes</a>
             </div>
         @else
-            <div class="test-questions" id="testQuestions">
-                @foreach($questions as $index => $question)
-                    <div class="tq-card" data-question-id="{{ $question->id }}" data-type="{{ $question->question_type }}">
-                        <div class="tq-header">
-                            <span class="tq-number">{{ $index + 1 }}</span>
-                            <span class="tq-type">
-                                @switch($question->question_type)
-                                    @case('MULTIPLE_CHOICE') Opción Múltiple @break
-                                    @case('TRUE_FALSE') Verdadero / Falso @break
-                                    @case('OPEN_ENDED') Pregunta Abierta @break
-                                @endswitch
+
+            @php $totalQ = $questions->count(); @endphp
+
+            <form action="{{ route('student.patients.test.submit', $patient) }}" method="POST" id="testForm">
+                @csrf
+
+                {{-- Barra de progreso superior --}}
+                <div class="tt-progress-wrap">
+                    <div class="tt-progress-fill" id="ttProgressFill"></div>
+                </div>
+
+                {{-- Cabecera: contador + flechas de navegación --}}
+                <div class="tt-header">
+                    <div class="tt-header-meta">
+                        <span class="tt-subject">{{ $patient->case_title }}</span>
+                        <div class="tt-question-count">
+                            Pregunta <span id="ttCurrentNum">1</span> de {{ $totalQ }}
+                            <span class="badge badge-secondary tt-pct-badge" id="ttPctBadge">
+                                {{ round(100 / $totalQ) }}%
                             </span>
-                            <span class="tq-points">{{ $question->points }} pts</span>
+                        </div>
+                    </div>
+                    <div class="tt-nav-arrows">
+                        <button type="button" class="tt-nav-btn" id="ttPrev" disabled>
+                            <i data-lucide="chevron-left"></i>
+                        </button>
+                        <button type="button" class="tt-nav-btn" id="ttNext" {{ $totalQ <= 1 ? 'disabled' : '' }}>
+                            <i data-lucide="chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Slides de preguntas --}}
+                @foreach($questions as $index => $question)
+                    <div class="tt-slide {{ $index === 0 ? 'tt-slide--active' : '' }}" data-index="{{ $index }}">
+
+                        {{-- Tarjeta con el enunciado --}}
+                        <div class="tt-question-card">
+                            <div class="tt-question-badges">
+                                <span class="badge badge-secondary">{{ $question->type_label }}</span>
+                                @if($question->is_required)
+                                    <span class="badge badge-warning">Obligatoria</span>
+                                @endif
+                            </div>
+                            <p class="tt-question-text">{{ $question->question_text }}</p>
                         </div>
 
-                        <p class="tq-text">{{ $question->question_text }}</p>
-
-                        {{-- OPCIÓN MÚLTIPLE --}}
-                        @if($question->question_type === 'MULTIPLE_CHOICE' && $question->options)
-                            <div class="tq-options">
+                        {{-- Opciones de respuesta --}}
+                        @if($question->question_type === \App\Models\Question::TYPE_MULTIPLE_CHOICE)
+                            <div class="tt-options">
                                 @foreach($question->options as $optIndex => $option)
-                                    <label class="tq-option" data-value="{{ $option }}">
-                                        <input type="radio" name="q_{{ $question->id }}" value="{{ $option }}">
-                                        <span class="tq-option-letter">{{ chr(65 + $optIndex) }}</span>
-                                        <span class="tq-option-text">{{ $option }}</span>
+                                    @php $letter = chr(65 + $optIndex); @endphp
+                                    <label class="tt-option">
+                                        <input type="radio" name="answers[{{ $question->id }}]" value="{{ $option }}"
+                                            class="tt-option-input">
+                                        <span class="tt-option-letter">{{ $letter }}</span>
+                                        <span class="tt-option-text">{{ $option }}</span>
+                                        <span class="tt-option-check">
+                                            <i data-lucide="check"></i>
+                                        </span>
                                     </label>
                                 @endforeach
                             </div>
-                            <input type="hidden" class="correct-answer" value="{{ $question->correct_answer }}">
-                            <input type="hidden" class="feedback-correct" value="{{ $question->feedback_correct }}">
-                            <input type="hidden" class="feedback-incorrect" value="{{ $question->feedback_incorrect }}">
-                        @endif
 
-                        {{-- VERDADERO / FALSO --}}
-                        @if($question->question_type === 'TRUE_FALSE')
-                            <div class="tq-options tq-tf">
-                                <label class="tq-option" data-value="true">
-                                    <input type="radio" name="q_{{ $question->id }}" value="true">
-                                    <span class="tq-option-text">Verdadero</span>
+                        @elseif($question->question_type === \App\Models\Question::TYPE_TRUE_FALSE)
+                            <div class="tt-options tt-options--tf">
+                                <label class="tt-option">
+                                    <input type="radio" name="answers[{{ $question->id }}]" value="true" class="tt-option-input">
+                                    <span class="tt-option-letter">V</span>
+                                    <span class="tt-option-text">Verdadero</span>
+                                    <span class="tt-option-check"><i data-lucide="check"></i></span>
                                 </label>
-                                <label class="tq-option" data-value="false">
-                                    <input type="radio" name="q_{{ $question->id }}" value="false">
-                                    <span class="tq-option-text">Falso</span>
+                                <label class="tt-option">
+                                    <input type="radio" name="answers[{{ $question->id }}]" value="false" class="tt-option-input">
+                                    <span class="tt-option-letter">F</span>
+                                    <span class="tt-option-text">Falso</span>
+                                    <span class="tt-option-check"><i data-lucide="check"></i></span>
                                 </label>
                             </div>
-                            <input type="hidden" class="correct-answer" value="{{ $question->correct_answer }}">
-                            <input type="hidden" class="feedback-correct" value="{{ $question->feedback_correct }}">
-                            <input type="hidden" class="feedback-incorrect" value="{{ $question->feedback_incorrect }}">
+
+                        @else
+                            {{-- Pregunta abierta --}}
+                            <div class="tt-open-answer">
+                                <textarea name="answers[{{ $question->id }}]" rows="5" class="tt-textarea"
+                                    placeholder="Escribe tu respuesta aquí..."></textarea>
+                            </div>
                         @endif
 
-                        {{-- PREGUNTA ABIERTA --}}
-                        @if($question->question_type === 'OPEN_ENDED')
-                            <textarea class="tq-open-answer" name="q_{{ $question->id }}"
-                                      placeholder="Escribe tu respuesta aquí..."></textarea>
-                        @endif
-
-                        {{-- Zona de feedback (oculta hasta corregir) --}}
-                        <div class="tq-feedback" style="display: none;"></div>
                     </div>
                 @endforeach
-            </div>
 
-            {{-- Botón de corregir --}}
-            <div class="test-actions">
-                <button type="button" class="btn-correct" id="btnCorrect" onclick="correctTest()">
-                    Corregir Test
-                </button>
-            </div>
+                {{-- Pie con botón de envío (solo visible en la última pregunta) --}}
+                <div class="tt-footer" id="ttFooter">
+                    <button type="button" id="btnSubmitTest" class="btn btn-primary btn-lg tt-submit-btn">
+                        <i data-lucide="send"></i>
+                        Enviar Cuestionario
+                    </button>
 
-            {{-- Resultado global (oculto hasta corregir) --}}
-            <div class="test-result" id="testResult" style="display: none;">
-                <div class="result-score">
-                    <span class="result-label">Tu puntuación</span>
-                    <span class="result-value" id="resultScore">0</span>
-                    <span class="result-total">/ {{ $questions->sum('points') }} puntos</span>
                 </div>
-                <a href="{{ route('home') }}" class="btn-back-home">Volver al Inicio</a>
-            </div>
+
+            </form>
         @endif
+
+
+        {{-- Modal de confirmación de envío --}}
+        <div class="sim-modal-overlay" id="submitModal">
+            <div class="sim-modal">
+                <div class="sim-modal-icon">
+                    <i data-lucide="send" style="width:26px;height:26px;"></i>
+                </div>
+                <div class="sim-modal-title">Enviar cuestionario</div>
+                <div class="sim-modal-body">
+                    ¿Estás seguro de que quieres enviar el cuestionario?<br>
+                    <strong>No podrás modificar tus respuestas.</strong>
+                </div>
+                <div class="sim-modal-actions">
+                    <button type="button" class="btn btn-ghost" id="btnCancelSubmit">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmSubmit">
+                        <i data-lucide="check"></i>
+                        Confirmar envío
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Modal de aviso: preguntas sin responder --}}
+        <div class="sim-modal-overlay" id="incompleteModal">
+            <div class="sim-modal">
+                <div class="sim-modal-icon" style="background: rgba(231,76,60,0.12); color: var(--color-danger);">
+                    <i data-lucide="alert-circle" style="width:26px;height:26px;"></i>
+                </div>
+                <div class="sim-modal-title">Preguntas sin responder</div>
+                <div class="sim-modal-body">
+                    Debes responder <strong>todas las preguntas</strong> antes de enviar el cuestionario.
+                </div>
+                <div class="sim-modal-actions">
+                    <button type="button" class="btn btn-primary" id="btnCloseIncomplete">
+                        Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <x-slot:scripts>
-        <script src="{{ asset('js/patient-test-take.js') }}"></script>
-    </x-slot:scripts>
+    <script>
+        (function () {
+            const totalQuestions = {{ $questions->count() }};
+            if (totalQuestions === 0) return;
+
+            let current = 0;
+
+            const slides = document.querySelectorAll('.tt-slide');
+            const prevBtn = document.getElementById('ttPrev');
+            const nextBtn = document.getElementById('ttNext');
+            const currentNum = document.getElementById('ttCurrentNum');
+            const pctBadge = document.getElementById('ttPctBadge');
+            const footer = document.getElementById('ttFooter');
+            const progressFill = document.getElementById('ttProgressFill');
+
+            function goTo(index) {
+                slides[current].classList.remove('tt-slide--active');
+                current = index;
+                slides[current].classList.add('tt-slide--active');
+
+                currentNum.textContent = current + 1;
+                const pct = Math.round(((current + 1) / totalQuestions) * 100);
+                pctBadge.textContent = pct + '%';
+                progressFill.style.width = pct + '%';
+
+                prevBtn.disabled = (current === 0);
+                nextBtn.disabled = (current === totalQuestions - 1);
+
+                if (current === totalQuestions - 1) {
+                    footer.classList.add('tt-footer--visible');
+                } else {
+                    footer.classList.remove('tt-footer--visible');
+                }
+
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+
+            prevBtn.addEventListener('click', () => { if (current > 0) goTo(current - 1); });
+            nextBtn.addEventListener('click', () => { if (current < totalQuestions - 1) goTo(current + 1); });
+
+            // Marcar opción seleccionada visualmente
+            document.querySelectorAll('.tt-option-input').forEach(function (input) {
+                input.addEventListener('change', function () {
+                    var name = this.name;
+                    document.querySelectorAll('input[name="' + name + '"]').forEach(function (i) {
+                        i.closest('.tt-option').classList.remove('tt-option--selected');
+                    });
+                    this.closest('.tt-option').classList.add('tt-option--selected');
+                });
+            });
+
+            goTo(0);
+        })();
+
+        // Validar que todas las preguntas están respondidas
+        function getPrimeraNoRespondida() {
+            const slides = document.querySelectorAll('.tt-slide');
+            const totalQuestions = {{ $questions->count() }};
+            document.querySelectorAll('.tt-question-card--error').forEach(el => {
+                el.classList.remove('tt-question-card--error');
+            });
+            for (let i = 0; i < totalQuestions; i++) {
+                const slide = slides[i];
+                const textarea = slide.querySelector('.tt-textarea');
+                if (textarea) {
+                    if (textarea.value.trim() === '') return i;
+                } else {
+                    if (!slide.querySelector('.tt-option-input:checked')) return i;
+                }
+            }
+            return -1;
+        }
+
+        // Modal de confirmación de envío
+        const submitModal = document.getElementById('submitModal');
+        const btnSubmit = document.getElementById('btnSubmitTest');
+        const btnCancel = document.getElementById('btnCancelSubmit');
+        const btnConfirm = document.getElementById('btnConfirmSubmit');
+        const testForm = document.getElementById('testForm');
+
+
+        btnCancel.addEventListener('click', () => {
+            submitModal.classList.remove('active');
+        });
+
+        btnConfirm.addEventListener('click', () => {
+            testForm.submit();
+        });
+
+        // Cerrar al hacer clic en el fondo
+        submitModal.addEventListener('click', (e) => {
+            if (e.target === submitModal) submitModal.classList.remove('active');
+        });
+
+        btnSubmit.addEventListener('click', () => {
+            const noRespondida = getPrimeraNoRespondida();
+            if (noRespondida !== -1) {
+                incompleteModal.classList.add('active');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                return;
+            }
+            submitModal.classList.add('active');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+
+        const incompleteModal = document.getElementById('incompleteModal');
+        const btnCloseIncomplete = document.getElementById('btnCloseIncomplete');
+
+        btnCloseIncomplete.addEventListener('click', () => incompleteModal.classList.remove('active'));
+        incompleteModal.addEventListener('click', (e) => {
+            if (e.target === incompleteModal) incompleteModal.classList.remove('active');
+        });
+
+
+
+    </script>
+
 </x-layouts.app>

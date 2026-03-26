@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 
 /**
  * Base de conocimiento del caso: la "verdad" médica y narrativa.
@@ -26,10 +24,10 @@ use Illuminate\Database\Eloquent\Casts\AsArrayObject;
  * @property \ArrayObject $entorno_familiar Contexto familiar y social (JSON).
  * @property \ArrayObject $hobbies Actividades y pasatiempos (JSON).
  * @property \ArrayObject $vicios Hábitos tóxicos con frecuencia y revelación (JSON).
+ * @property string|null $motivo_consulta Motivo oficial de la visita médica.
  */
 class PatientKnowledgeBase extends Model
 {
-    use HasFactory;
 
     const UPDATED_AT = null;
 
@@ -48,16 +46,17 @@ class PatientKnowledgeBase extends Model
         'entorno_familiar',
         'hobbies',
         'vicios',
+        'motivo_consulta'
     ];
 
     protected $casts = [
-        'antecedentes_medicos' => AsArrayObject::class,
-        'medicacion_tomada'    => AsArrayObject::class,
-        'sintomas_asociados'   => AsArrayObject::class,
-        'historia_familiar'    => AsArrayObject::class,
-        'entorno_familiar'     => AsArrayObject::class,
-        'hobbies'              => AsArrayObject::class,
-        'vicios'               => AsArrayObject::class,
+        'antecedentes_medicos' => 'array',
+        'medicacion_tomada'    => 'array',
+        'sintomas_asociados'   => 'array',
+        'historia_familiar'    => 'array',
+        'entorno_familiar'     => 'array',
+        'hobbies'              => 'array',
+        'vicios'               => 'array',
     ];
 
     public function patient()

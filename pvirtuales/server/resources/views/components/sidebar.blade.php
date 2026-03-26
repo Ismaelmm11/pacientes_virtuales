@@ -10,9 +10,9 @@
 | (mientras se construye la app por fases).
 |
 | ROLES:
-|   Admin    (Role::ADMIN_ID = 3)   → Gestión global del sistema
-|   Profesor (Role::TEACHER_ID = 2) → Gestión de sus asignaturas y pacientes
-|   Alumno   (Role::STUDENT_ID = 1) → Navegación por asignaturas y simulaciones
+| Admin (Role::ADMIN_ID = 3) → Gestión global del sistema
+| Profesor (Role::TEACHER_ID = 2) → Gestión de sus asignaturas y pacientes
+| Alumno (Role::STUDENT_ID = 1) → Navegación por asignaturas y simulaciones
 |
 --}}
 
@@ -51,8 +51,8 @@
     <nav class="sidebar-nav">
 
         {{-- -----------------------------------------------
-             ADMIN
-             ----------------------------------------------- --}}
+        ADMIN
+        ----------------------------------------------- --}}
         @if(auth()->user()->isAdmin())
 
             <div class="sidebar-nav-group">
@@ -60,7 +60,7 @@
 
                 @if(Route::has('admin.dashboard'))
                     <a href="{{ route('admin.dashboard') }}"
-                       class="sidebar-nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                        class="sidebar-nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                         <i data-lucide="layout-dashboard"></i>
                         Dashboard
                     </a>
@@ -72,7 +72,7 @@
 
                 @if(Route::has('admin.users.index'))
                     <a href="{{ route('admin.users.index') }}"
-                       class="sidebar-nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                        class="sidebar-nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                         <i data-lucide="users"></i>
                         Usuarios
                     </a>
@@ -80,7 +80,7 @@
 
                 @if(Route::has('admin.subjects.index'))
                     <a href="{{ route('admin.subjects.index') }}"
-                       class="sidebar-nav-item {{ request()->routeIs('admin.subjects.*') ? 'active' : '' }}">
+                        class="sidebar-nav-item {{ request()->routeIs('admin.subjects.*') ? 'active' : '' }}">
                         <i data-lucide="book-open"></i>
                         Asignaturas
                     </a>
@@ -88,7 +88,7 @@
 
                 @if(Route::has('admin.patients.index'))
                     <a href="{{ route('admin.patients.index') }}"
-                       class="sidebar-nav-item {{ request()->routeIs('admin.patients.*') ? 'active' : '' }}">
+                        class="sidebar-nav-item {{ request()->routeIs('admin.patients.*') ? 'active' : '' }}">
                         <i data-lucide="user-round"></i>
                         Pacientes
                     </a>
@@ -100,16 +100,16 @@
 
                 @if(Route::has('admin.consultations.index'))
                     <a href="{{ route('admin.consultations.index') }}"
-                       class="sidebar-nav-item {{ request()->routeIs('admin.consultations.*') ? 'active' : '' }}">
+                        class="sidebar-nav-item {{ request()->routeIs('admin.consultations.*') ? 'active' : '' }}">
                         <i data-lucide="message-square"></i>
                         Consultas
                     </a>
                 @endif
             </div>
 
-        {{-- -----------------------------------------------
-             PROFESOR
-             ----------------------------------------------- --}}
+            {{-- -----------------------------------------------
+            PROFESOR
+            ----------------------------------------------- --}}
         @elseif(auth()->user()->isTeacher())
 
             <div class="sidebar-nav-group">
@@ -117,7 +117,7 @@
 
                 @if(Route::has('teacher.dashboard'))
                     <a href="{{ route('teacher.dashboard') }}"
-                       class="sidebar-nav-item {{ request()->routeIs('teacher.dashboard') ? 'active' : '' }}">
+                        class="sidebar-nav-item {{ request()->routeIs('teacher.dashboard') ? 'active' : '' }}">
                         <i data-lucide="layout-dashboard"></i>
                         Dashboard
                     </a>
@@ -129,7 +129,7 @@
 
                 @if(Route::has('teacher.subjects.index'))
                     <a href="{{ route('teacher.subjects.index') }}"
-                       class="sidebar-nav-item {{ request()->routeIs('teacher.subjects.*') ? 'active' : '' }}">
+                        class="sidebar-nav-item {{ request()->routeIs('teacher.subjects.*') ? 'active' : '' }}">
                         <i data-lucide="book-open"></i>
                         Asignaturas
                     </a>
@@ -137,7 +137,7 @@
 
                 @if(Route::has('teacher.patients.index'))
                     <a href="{{ route('teacher.patients.index') }}"
-                       class="sidebar-nav-item {{ request()->routeIs('teacher.patients.*') ? 'active' : '' }}">
+                        class="sidebar-nav-item {{ request()->routeIs('teacher.patients.*') ? 'active' : '' }}">
                         <i data-lucide="user-round"></i>
                         Pacientes
                     </a>
@@ -149,7 +149,7 @@
 
                 @if(Route::has('teacher.consultations.index'))
                     <a href="{{ route('teacher.consultations.index') }}"
-                       class="sidebar-nav-item {{ request()->routeIs('teacher.consultations.*') ? 'active' : '' }}">
+                        class="sidebar-nav-item {{ request()->routeIs('teacher.consultations.*') ? 'active' : '' }}">
                         <i data-lucide="message-square"></i>
                         Consultas
                     </a>
@@ -157,16 +157,16 @@
 
                 @if(Route::has('teacher.results.index'))
                     <a href="{{ route('teacher.results.index') }}"
-                       class="sidebar-nav-item {{ request()->routeIs('teacher.results.*') ? 'active' : '' }}">
+                        class="sidebar-nav-item {{ request()->routeIs('teacher.results.*') ? 'active' : '' }}">
                         <i data-lucide="clipboard-check"></i>
                         Resultados Tests
                     </a>
                 @endif
             </div>
 
-        {{-- -----------------------------------------------
-             ALUMNO
-             ----------------------------------------------- --}}
+            {{-- -----------------------------------------------
+            ALUMNO
+            ----------------------------------------------- --}}
         @else
 
             <div class="sidebar-nav-group">
@@ -174,7 +174,7 @@
 
                 @if(Route::has('student.dashboard'))
                     <a href="{{ route('student.dashboard') }}"
-                       class="sidebar-nav-item {{ request()->routeIs('student.dashboard') ? 'active' : '' }}">
+                        class="sidebar-nav-item {{ request()->routeIs('student.dashboard') ? 'active' : '' }}">
                         <i data-lucide="layout-dashboard"></i>
                         Dashboard
                     </a>
@@ -186,9 +186,17 @@
 
                 @if(Route::has('student.subjects.index'))
                     <a href="{{ route('student.subjects.index') }}"
-                       class="sidebar-nav-item {{ request()->routeIs('student.subjects.*') ? 'active' : '' }}">
+                        class="sidebar-nav-item {{ request()->routeIs('student.subjects.*') ? 'active' : '' }}">
                         <i data-lucide="book-open"></i>
                         Asignaturas
+                    </a>
+                @endif
+
+                @if(Route::has('student.patients.index'))
+                    <a href="{{ route('student.patients.index') }}"
+                        class="sidebar-nav-item {{ request()->routeIs('student.patients.*') ? 'active' : '' }}">
+                        <i data-lucide="stethoscope"></i>
+                        Practicar
                     </a>
                 @endif
             </div>
@@ -198,7 +206,7 @@
 
                 @if(Route::has('student.consultations.index'))
                     <a href="{{ route('student.consultations.index') }}"
-                       class="sidebar-nav-item {{ request()->routeIs('student.consultations.*') ? 'active' : '' }}">
+                        class="sidebar-nav-item {{ request()->routeIs('student.consultations.*') ? 'active' : '' }}">
                         <i data-lucide="message-square"></i>
                         Mis Consultas
                     </a>
@@ -206,7 +214,7 @@
 
                 @if(Route::has('student.results.index'))
                     <a href="{{ route('student.results.index') }}"
-                       class="sidebar-nav-item {{ request()->routeIs('student.results.*') ? 'active' : '' }}">
+                        class="sidebar-nav-item {{ request()->routeIs('student.results.*') ? 'active' : '' }}">
                         <i data-lucide="clipboard-check"></i>
                         Mis Resultados
                     </a>

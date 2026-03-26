@@ -18,16 +18,16 @@
         <div class="chat-header">
             <div class="patient-info">
                 <h2>Paciente: {{ $patient['name'] }}</h2>
-                <span>Simulación Activa</span>
+                <span>{{ $patient['patient_description'] }}</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                {{-- Identificador visual del modelo de IA que está "poseyendo" al paciente --}}
-                <span class="ai-badge bg-{{ $aiModel }}">IA: {{ strtoupper($aiModel) }}</span>
-                {{-- Salida segura para finalizar la sesión --}}
-                <a href="{{ route('patients.test.take', $patient['id']) }}" class="btn-exit"
-                    onclick="return confirm('¿Seguro que quieres finalizar la consulta e ir al test?')">
-                    Finalizar y Hacer Test
-                </a>
+            <div class="chat-header-right">
+                <span class="ai-badge">IA EN USO: {{ $patient['isTeacher'] ? 'Sí' : 'No' }}
+                    {{ strtoupper($aiModel) }}</span>
+                @if($patient['isTeacher'])
+                    <a href="{{ route('teacher.patients.preview', $patient['id']) }}" class="btn-exit">
+                        Volver atrás
+                    </a>
+                @endif
             </div>
         </div>
 
@@ -80,6 +80,38 @@
         </div>
     </div>
 
+    @if(!$patient['isTeacher'])
+        <div class="chat-footer-student" id="chatFooterStudent">
+            <button class="btn-finish" id="btnFinish" onclick="openFarewellModal()">
+                <i data-lucide="phone-off"></i>
+                Finalizar Consulta
+            </button>
+            <a href="{{ route('patients.test.take', $patient['id']) }}" class="btn-go-test" id="btnGoTest">
+                <i data-lucide="clipboard-list"></i>
+                Ir al Cuestionario
+            </a>
+        </div>
+    @endif
+
+    @if(!$patient['isTeacher'])
+        <div class="farewell-overlay" id="farewellOverlay">
+            <div class="farewell-modal">
+                <div class="farewell-modal-header">
+                    <h3>Finalizar Consulta</h3>
+                    <p>Escribe tu mensaje de despedida al paciente. Una vez enviado, no podrás enviar más mensajes.</p>
+                </div>
+                <textarea class="farewell-input" id="farewellInput"
+                    placeholder="Ej: Muchas gracias por venir, le recetaré algo para el dolor..."></textarea>
+                <div class="farewell-modal-actions">
+                    <button class="btn-farewell-cancel" onclick="closeFarewellModal()">Cancelar</button>
+                    <button class="btn-farewell-send" id="btnFarewellSend" onclick="sendFarewell()">
+                        Enviar y Finalizar
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <x-slot:scripts>
         {{--
         PUENTE LARAVEL -> JAVASCRIPT:
@@ -91,7 +123,9 @@
             const CHAT_CONFIG = {
                 sendUrl: "{{ route('simulation.send') }}",
                 csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                patientName: "{{ $patient['name'] }}"
+                patientName: "{{ $patient['name'] }}",
+                isTeacher: {{ $patient['isTeacher'] ? 'true' : 'false' }},
+                testUrl: "{{ route('patients.test.take', $patient['id']) }}"
             };
         </script>
         {{-- Cargamos la lógica de comunicación que comentamos anteriormente --}}

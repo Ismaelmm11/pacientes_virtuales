@@ -1,269 +1,563 @@
 {{--
 |--------------------------------------------------------------------------
-| Gestión del Test de Evaluación del Paciente
+| Gestión del Test de Evaluación
 |--------------------------------------------------------------------------
-|
-| Página dedicada donde el profesor crea las preguntas del test que
-| el estudiante responderá tras la simulación.
-|
-| TIPOS SOPORTADOS:
-| - Opción Múltiple (2-6 opciones, respuesta correcta obligatoria)
-| - Verdadero/Falso (respuesta correcta obligatoria)
-| - Pregunta Abierta (sin respuesta correcta ni feedback)
-|
 --}}
-<x-layouts.app title="Test — {{ $patient->case_title }}">
-    <x-slot:styles>
-        <link href="{{ asset('css/patients.css') }}" rel="stylesheet">
-        <link href="{{ asset('css/patient-test.css') }}" rel="stylesheet">
-    </x-slot:styles>
+<x-layouts.app>
 
-    <x-navbar backRoute="patients.preview" :backRouteParams="$patient" backLabel="Volver al Preview" rightLabel="Gestión del Test" />
+    <x-slot name="title">Test — {{ $patient->case_title }}</x-slot>
 
-    <div class="container" style="margin-top: 30px;">
+    <x-slot name="styles">
+        <link href="{{ asset('css/create-patient.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+    </x-slot>
 
-        {{-- Mensajes flash --}}
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif
-
-        {{-- Cabecera --}}
-        <div class="test-header">
-            <div>
-                <h1>📝 Test de Evaluación</h1>
-                <p class="test-subtitle">{{ $patient->case_title }}</p>
+    <x-slot name="topbar">
+        <div class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-title">Test de Evaluación</div>
+                <div class="topbar-subtitle">
+                    <span class="mode-badge">
+                        <i data-lucide="clipboard-list"></i>
+                        {{ $patient->case_title }}
+                    </span>
+                </div>
             </div>
-            <div class="test-stats">
-                <span class="test-stat">
-                    <strong>{{ $questions->count() }}</strong> {{ $questions->count() === 1 ? 'pregunta' : 'preguntas' }}
-                </span>
-                <span class="test-stat">
-                    <strong>{{ $questions->sum('points') }}</strong> puntos totales
-                </span>
-            </div>
-        </div>
-
-        {{-- PREGUNTAS EXISTENTES --}}
-        @if($questions->isNotEmpty())
-            <div class="questions-list">
-                @foreach($questions as $index => $question)
-                    <div class="question-card">
-                        <div class="question-card-header">
-                            <span class="question-number">{{ $index + 1 }}</span>
-                            <span class="question-type-badge badge-{{ strtolower($question->question_type) }}">
-                                {{ $question->type_label }}
-                            </span>
-                            <span class="question-points">{{ $question->points }} pts</span>
-                            <form action="{{ route('patients.test.destroy', [$patient, $question]) }}" method="POST"
-                                  onsubmit="return confirm('¿Eliminar esta pregunta?')" style="margin-left: auto;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn-delete-question" title="Eliminar pregunta">✕</button>
-                            </form>
-                        </div>
-                        <div class="question-card-body">
-                            <p class="question-text">{{ $question->question_text }}</p>
-
-                            {{-- Opciones para múltiple elección --}}
-                            @if($question->question_type === 'MULTIPLE_CHOICE' && $question->options)
-                                <div class="question-options">
-                                    @foreach($question->options as $option)
-                                        <span class="option-pill {{ $option === $question->correct_answer ? 'option-correct' : '' }}">
-                                            {{ $option }}
-                                            @if($option === $question->correct_answer) ✓ @endif
-                                        </span>
-                                    @endforeach
-                                </div>
-                            @endif
-
-                            {{-- Respuesta para V/F --}}
-                            @if($question->question_type === 'TRUE_FALSE')
-                                <p class="question-answer">
-                                    Respuesta correcta: <strong>{{ $question->correct_answer === 'true' ? 'Verdadero' : 'Falso' }}</strong>
-                                </p>
-                            @endif
-
-                            {{-- Feedback --}}
-                            @if($question->feedback_correct || $question->feedback_incorrect)
-                                <div class="question-feedback">
-                                    @if($question->feedback_correct)
-                                        <p class="feedback-correct">✅ {{ $question->feedback_correct }}</p>
-                                    @endif
-                                    @if($question->feedback_incorrect)
-                                        <p class="feedback-incorrect">❌ {{ $question->feedback_incorrect }}</p>
-                                    @endif
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        @else
-            <div class="empty-test">
-                <p>No hay preguntas todavía. Añade al menos <strong>1 pregunta</strong> para poder publicar el paciente.</p>
-            </div>
-        @endif
-
-        {{-- FORMULARIO PARA AÑADIR PREGUNTA --}}
-        <div class="add-question-section">
-            <h2 class="add-question-title">Añadir Pregunta</h2>
-
-            {{-- Errores de validación --}}
-            @if($errors->any())
-                <div class="alert alert-danger">
-                    <strong>Corrige los siguientes errores:</strong>
-                    <ul>
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form action="{{ route('patients.test.store', $patient) }}" method="POST" id="questionForm">
-                @csrf
-
-                {{-- Tipo de pregunta --}}
-                <div class="form-group">
-                    <label for="question_type">Tipo de Pregunta <span class="required">*</span></label>
-                    <select id="question_type" name="question_type" required onchange="handleTypeChange()">
-                        <option value="MULTIPLE_CHOICE" {{ old('question_type', 'MULTIPLE_CHOICE') === 'MULTIPLE_CHOICE' ? 'selected' : '' }}>Opción Múltiple</option>
-                        <option value="TRUE_FALSE" {{ old('question_type') === 'TRUE_FALSE' ? 'selected' : '' }}>Verdadero / Falso</option>
-                        <option value="OPEN_ENDED" {{ old('question_type') === 'OPEN_ENDED' ? 'selected' : '' }}>Pregunta Abierta</option>
-                    </select>
-                </div>
-
-                {{-- Enunciado --}}
-                <div class="form-group">
-                    <label for="question_text">Enunciado <span class="required">*</span></label>
-                    <textarea id="question_text" name="question_text" required
-                              placeholder="Ej: ¿Cuál es el diagnóstico más probable para este paciente?">{{ old('question_text') }}</textarea>
-                </div>
-
-                {{-- Puntuación --}}
-                <div class="form-group form-group-inline">
-                    <label for="points">Puntuación <span class="required">*</span></label>
-                    <input type="number" id="points" name="points" value="{{ old('points', 10) }}"
-                           min="0.01" max="100" step="0.5" required style="max-width: 120px;">
-                    <span class="hint">puntos</span>
-                </div>
-
-                {{-- OPCIONES: Solo para Opción Múltiple --}}
-                <div id="multipleChoiceFields">
-                    <div class="form-group">
-                        <label>Opciones <span class="required">*</span>
-                            <span class="hint">(mínimo 2, máximo 6)</span>
-                        </label>
-                        <div id="optionsContainer">
-                            <div class="option-row">
-                                <input type="text" name="options[]" value="{{ old('options.0') }}" placeholder="Opción A">
-                                <button type="button" class="btn-remove-option" onclick="removeOption(this)" style="visibility: hidden;">✕</button>
-                            </div>
-                            <div class="option-row">
-                                <input type="text" name="options[]" value="{{ old('options.1') }}" placeholder="Opción B">
-                                <button type="button" class="btn-remove-option" onclick="removeOption(this)" style="visibility: hidden;">✕</button>
-                            </div>
-                        </div>
-                        <button type="button" class="btn-add-option" id="btnAddOption" onclick="addOption()">+ Añadir opción</button>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="correct_answer_mc">Respuesta Correcta <span class="required">*</span>
-                            <span class="hint">(escribe exactamente una de las opciones)</span>
-                        </label>
-                        <input type="text" id="correct_answer_mc" name="correct_answer" value="{{ old('correct_answer') }}"
-                               placeholder="Escribe aquí la opción correcta tal cual">
-                    </div>
-                </div>
-
-                {{-- VERDADERO/FALSO: Respuesta correcta --}}
-                <div id="trueFalseFields" style="display: none;">
-                    <div class="form-group">
-                        <label>Respuesta Correcta <span class="required">*</span></label>
-                        <div class="tf-options">
-                            <label class="tf-option">
-                                <input type="radio" name="correct_answer" value="true" {{ old('correct_answer') === 'true' ? 'checked' : '' }}>
-                                <span>Verdadero</span>
-                            </label>
-                            <label class="tf-option">
-                                <input type="radio" name="correct_answer" value="false" {{ old('correct_answer') === 'false' ? 'checked' : '' }}>
-                                <span>Falso</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- FEEDBACK: Solo para MC y V/F --}}
-                <div id="feedbackFields">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="feedback_correct">Feedback si acierta <span class="hint">(opcional)</span></label>
-                            <textarea id="feedback_correct" name="feedback_correct"
-                                      placeholder="Ej: Correcto. Los hallazgos sugieren...">{{ old('feedback_correct') }}</textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="feedback_incorrect">Feedback si falla <span class="hint">(opcional)</span></label>
-                            <textarea id="feedback_incorrect" name="feedback_incorrect"
-                                      placeholder="Ej: Incorrecto. Recuerda que el paciente presentaba...">{{ old('feedback_incorrect') }}</textarea>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Info para pregunta abierta --}}
-                <div id="openEndedInfo" style="display: none;">
-                    <div class="context-box">
-                        <strong>ℹ️ Pregunta Abierta</strong>
-                        <p>Las preguntas abiertas no tienen respuesta correcta ni feedback automático. Se evalúan manualmente o se dejan como reflexión para el estudiante.</p>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn-submit">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="12" y1="5" x2="12" y2="19"/>
-                            <line x1="5" y1="12" x2="19" y2="12"/>
-                        </svg>
-                        Añadir Pregunta
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        {{-- ACCIONES FINALES --}}
-        <div class="test-actions">
-            <a href="{{ route('patients.preview', $patient) }}" class="btn-large btn-secondary-large">
-                ← Volver al Preview
-            </a>
-
-            @if(!$patient->is_published)
-                @if($questions->count() >= 1)
-                    <form action="{{ route('patients.publish', $patient) }}" method="POST" style="display: inline;">
+            <div class="topbar-right">
+                <a href="{{ route('teacher.patients.preview', $patient) }}" class="btn btn-ghost btn-sm">
+                    <i data-lucide="arrow-left"></i>
+                    Volver al Paciente
+                </a>
+                @if(!$patient->is_published)
+                    <form action="{{ route('teacher.patients.publish', $patient) }}" method="POST" class="cp-form-inline">
                         @csrf
-                        <button type="submit" class="btn-large btn-primary-large">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                                <polyline points="22 4 12 14.01 9 11.01"/>
-                            </svg>
+                        <button type="submit" class="btn btn-primary btn-sm" {{ $questions->isEmpty() ? 'disabled' : '' }}>
+                            <i data-lucide="send"></i>
                             Publicar Paciente
                         </button>
                     </form>
                 @else
-                    <span class="btn-large btn-disabled" title="Añade al menos 1 pregunta para publicar">
-                        🔒 Publicar (necesitas al menos 1 pregunta)
-                    </span>
+                    <form action="{{ route('teacher.patients.publish', $patient) }}" method="POST" class="cp-form-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-ghost btn-sm">
+                            <i data-lucide="eye-off"></i>
+                            Despublicar
+                        </button>
+                    </form>
                 @endif
-            @else
-                <span class="btn-large" style="background: var(--color-success, #27ae60); color: white; cursor: default;">
-                    ✓ Paciente Publicado
-                </span>
-            @endif
+            </div>
         </div>
+    </x-slot>
+
+    @if(session('success'))
+        <div class="cp-alert-success">
+            <div class="cp-alert-success-icon"><i data-lucide="circle-check"></i></div>
+            <div class="cp-alert-success-text">{{ session('success') }}</div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="cp-alert-error">
+            <div class="cp-alert-icon"><i data-lucide="circle-alert"></i></div>
+            <div class="cp-alert-body">{{ session('error') }}</div>
+        </div>
+    @endif
+
+    <div class="create-patient-layout">
+        <div class="create-patient-main">
+
+            {{-- ===== SECCIÓN 1: CONFIGURACIÓN DEL TEST ===== --}}
+            <div class="cp-section">
+                <div class="cp-section-header">
+                    <div class="cp-section-icon"><i data-lucide="settings"></i></div>
+                    <h2 class="cp-section-title">Configuración del Test</h2>
+                </div>
+                <p class="cp-section-desc">Define cómo se comporta el test cuando el alumno lo realiza.</p>
+
+                <form action="{{ route('teacher.patients.test.config', $patient) }}" method="POST" id="configForm">
+                    @csrf
+                    @method('PUT')
+
+                    <div>
+
+                        {{-- Intentos máximos --}}
+                        <div class="cp-form-group">
+                            <div class="cp-label-row">
+                                <label for="max_attempts">Intentos máximos</label>
+                                <span class="help-tooltip">
+                                    <span class="help-tooltip-icon">?</span>
+                                    <span class="help-tooltip-bubble">
+                                        <strong>¿Para qué sirve?</strong>
+                                        Número de veces que un alumno puede simular este paciente.
+                                        Selecciona "Ilimitados" si no quieres restringirlo.
+                                    </span>
+                                </span>
+                            </div>
+
+                            {{-- Checkbox para activar intentos ilimitados --}}
+                            <label class="cp-toggle-label">
+                                <input type="checkbox" id="unlimited_attempts" {{ old('max_attempts', $patient->max_attempts) == -1 ? 'checked' : '' }}
+                                    onchange="toggleUnlimitedAttempts(this)">
+                                Ilimitados
+                            </label>
+
+                            {{-- Input numérico (oculto si se activó "Ilimitados") --}}
+                            <input type="number" id="max_attempts" name="max_attempts" min="1" max="10"
+                                value="{{ old('max_attempts', $patient->max_attempts) == -1 ? 1 : old('max_attempts', $patient->max_attempts) }}"
+                                {{ old('max_attempts', $patient->max_attempts) == -1 ? 'disabled hidden' : '' }}>
+
+                            {{-- Input oculto que envía -1 cuando está marcado "Ilimitados" --}}
+                            <input type="hidden" id="max_attempts_unlimited" name="max_attempts" value="-1" {{ old('max_attempts', $patient->max_attempts) == -1 ? '' : 'disabled' }}>
+                        </div>
+
+                        {{-- Aleatorización --}}
+                        <div class="cp-form-group">
+                            <div class="cp-label-row">
+                                <label>¿Preguntas aleatorias?</label>
+                                <span class="help-tooltip">
+                                    <span class="help-tooltip-icon">?</span>
+                                    <span class="help-tooltip-bubble">
+                                        Si está activo, cada intento mostrará un subconjunto aleatorio de preguntas.
+                                        Deberás definir cuántas aparecen por test.
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="cp-attendee-selector">
+                                <div class="cp-attendee-option">
+                                    <input type="radio" name="randomize_questions" id="random_no" value="0" {{ !$patient->randomize_questions ? 'checked' : '' }}
+                                        onchange="toggleRandomConfig(false)">
+                                    <label for="random_no">
+                                        <span class="attendee-icon">📋</span>
+                                        <span class="attendee-label">No</span>
+                                        <span class="attendee-desc">Aparecen todas las preguntas</span>
+                                    </label>
+                                </div>
+                                <div class="cp-attendee-option">
+                                    <input type="radio" name="randomize_questions" id="random_yes" value="1" {{ $patient->randomize_questions ? 'checked' : '' }}
+                                        onchange="toggleRandomConfig(true)">
+                                    <label for="random_yes">
+                                        <span class="attendee-icon">🎲</span>
+                                        <span class="attendee-label">Sí</span>
+                                        <span class="attendee-desc">Subconjunto aleatorio por intento</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {{-- Preguntas por test (solo si aleatorio) --}}
+                    <div class="cp-random-config {{ $patient->randomize_questions ? 'visible' : '' }}"
+                        id="randomConfig">
+                        <div class="cp-form-group">
+                            <div class="cp-label-row">
+                                <label for="questions_per_test">Preguntas por test<span
+                                        class="required">*</span></label>
+                                <span class="help-tooltip">
+                                    <span class="help-tooltip-icon">?</span>
+                                    <span class="help-tooltip-bubble">
+                                        Cuántas preguntas aparecen en cada intento. Las obligatorias siempre aparecen y
+                                        cuentan dentro de este límite.
+                                    </span>
+                                </span>
+                            </div>
+                            <input type="number" id="questions_per_test" name="questions_per_test" min="1"
+                                value="{{ old('questions_per_test', $patient->questions_per_test) }}"
+                                placeholder="Ej: 5">
+                            @php
+                                $required = $questions->where('is_required', true)->count();
+                                $total = $questions->count();
+                            @endphp
+                            @if($total > 0)
+                                <p class="cp-field-hint">
+                                    Tienes {{ $total }} preguntas ({{ $required }} obligatorias).
+                                    Para que haya aleatoriedad real necesitas más preguntas no obligatorias que el límite
+                                    menos las obligatorias.
+                                </p>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Orden aleatorio --}}
+                    <div class="cp-form-group">
+                        <div class="cp-label-row">
+                            <label>¿Orden aleatorio?</label>
+                            <span class="help-tooltip">
+                                <span class="help-tooltip-icon">?</span>
+                                <span class="help-tooltip-bubble">
+                                    Si está activo, las preguntas aparecen en un orden diferente en cada intento.
+                                    Es independiente de la aleatorización del banco de preguntas.
+                                </span>
+                            </span>
+                        </div>
+                        <div class="cp-attendee-selector">
+                            <div class="cp-attendee-option">
+                                <input type="radio" name="randomize_order" id="order_no" value="0" {{ !$patient->randomize_order ? 'checked' : '' }}>
+                                <label for="order_no">
+                                    <span class="attendee-icon">📋</span>
+                                    <span class="attendee-label">No</span>
+                                    <span class="attendee-desc">Siempre en el mismo orden</span>
+                                </label>
+                            </div>
+                            <div class="cp-attendee-option">
+                                <input type="radio" name="randomize_order" id="order_yes" value="1" {{ $patient->randomize_order ? 'checked' : '' }}>
+                                <label for="order_yes">
+                                    <span class="attendee-icon">🔀</span>
+                                    <span class="attendee-label">Sí</span>
+                                    <span class="attendee-desc">Orden distinto en cada intento</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="cp-form-actions">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i data-lucide="save"></i>
+                            Guardar Configuración
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+            {{-- ===== SECCIÓN 2: PREGUNTAS EXISTENTES ===== --}}
+            <div class="cp-section">
+                <div class="cp-section-header">
+                    <div class="cp-section-icon"><i data-lucide="list"></i></div>
+                    <h2 class="cp-section-title">Preguntas del Test</h2>
+                </div>
+                <p class="cp-section-desc">
+                    {{ $questions->count() }} {{ $questions->count() === 1 ? 'pregunta creada' : 'preguntas creadas' }}.
+                    Necesitas al menos una para poder publicar el paciente.
+                </p>
+
+                @if($questions->isEmpty())
+                    <div class="cp-empty-state">
+                        <div class="cp-empty-icon"><i data-lucide="clipboard-x"></i></div>
+                        <p class="cp-empty-title">Aún no hay preguntas</p>
+                        <p class="cp-empty-desc">Usa el formulario de abajo para añadir la primera.</p>
+                    </div>
+                @else
+                    <div class="cp-question-list">
+                        @foreach($questions as $index => $question)
+                                        <div class="cp-question-item">
+                                            <div class="cp-question-item-left">
+                                                <span class="cp-question-number">{{ $index + 1 }}</span>
+                                                <div class="cp-question-body">
+                                                    <div class="cp-question-text">{{ $question->question_text }}</div>
+                                                    <div class="cp-question-meta">
+                                                        <span
+                                                            class="badge {{ $question->question_type === 'MULTIPLE_CHOICE' ? 'badge-primary' : ($question->question_type === 'TRUE_FALSE' ? 'badge-secondary' : 'badge-warning') }}">
+                                                            {{ $question->type_label }}
+                                                        </span>
+                                                        @if($question->is_required)
+                                                            <span class="badge badge-danger">Obligatoria</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="cp-question-item-right">
+
+                                                <button type="button" class="btn-action btn-action-edit" onclick="loadQuestionForEdit({{ Js::from([
+                                'id' => $question->id,
+                                'question_text' => $question->question_text,
+                                'question_type' => $question->question_type,
+                                'options' => $question->options,
+                                'correct_answer' => $question->correct_answer,
+                                'feedback_correct' => $question->feedback_correct,
+                                'feedback_incorrect' => $question->feedback_incorrect,
+                                'is_required' => $question->is_required,
+                            ]) }})" title="Editar">
+                                                    <i data-lucide="pencil"></i>
+                                                </button>
+
+                                                <form action="{{ route('teacher.patients.test.destroy', [$patient, $question]) }}"
+                                                    method="POST" onsubmit="return confirm('¿Eliminar esta pregunta?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn-action btn-action-danger" title="Eliminar">
+                                                        <i data-lucide="trash-2"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+
+            {{-- ===== SECCIÓN 3: AÑADIR PREGUNTA ===== --}}
+            <div class="cp-section">
+                <div class="cp-section-header">
+                    <div class="cp-section-icon"><i data-lucide="plus-circle"></i></div>
+                    <h2 class="cp-section-title">Añadir Pregunta</h2>
+                    <h2 class="cp-section-title" id="questionFormTitle">Añadir Pregunta</h2>
+                </div>
+                <p class="cp-section-desc">Elige el tipo y rellena los campos. Los campos cambian según el tipo
+                    seleccionado.</p>
+
+                <form action="{{ route('teacher.patients.test.store', $patient) }}" method="POST" id="questionForm"
+                    data-store-url="{{ route('teacher.patients.test.store', $patient) }}">
+
+                    @csrf
+
+                    @if($errors->any())
+                        <div class="cp-alert-error">
+                            <div class="cp-alert-icon"><i data-lucide="circle-alert"></i></div>
+                            <div class="cp-alert-body">
+                                <strong>Corrige los errores:</strong>
+                                <ul>
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- Tipo de pregunta --}}
+                    <div class="cp-form-group">
+                        <div class="cp-label-row">
+                            <label>Tipo de Pregunta <span class="required">*</span></label>
+                        </div>
+                        <div class="cp-question-type-selector">
+                            @foreach(\App\Models\Question::typeLabels() as $value => $label)
+                                <div class="cp-attendee-option">
+                                    <input type="radio" name="question_type" id="type_{{ $value }}" value="{{ $value }}" {{ old('question_type') === $value ? 'checked' : '' }}
+                                        onchange="switchQuestionType('{{ $value }}')">
+                                    <label for="type_{{ $value }}">
+                                        <span class="attendee-icon">
+                                            {{ $value === 'MULTIPLE_CHOICE' ? '🔘' : ($value === 'TRUE_FALSE' ? '✅' : '✍️') }}
+                                        </span>
+                                        <span class="attendee-label">{{ $label }}</span>
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Enunciado --}}
+                    <div class="cp-form-group">
+                        <div class="cp-label-row">
+                            <label for="question_text">Enunciado <span class="required">*</span></label>
+                        </div>
+                        <textarea id="question_text" name="question_text"
+                            placeholder="Ej: ¿Cuál es el diagnóstico más probable para este paciente?">{{ old('question_text') }}</textarea>
+                    </div>
+
+                    {{-- Campos dinámicos: Opción múltiple --}}
+                    <div class="cp-question-fields" id="fields_MULTIPLE_CHOICE">
+                        <div class="cp-form-group">
+                            <div class="cp-label-row">
+                                <label>Opciones <span class="required">*</span></label>
+                            </div>
+                            <div class="cp-options-list" id="optionsList">
+                                @if(old('question_type') === 'MULTIPLE_CHOICE' && old('options'))
+                                    @foreach(old('options') as $i => $opt)
+                                        <div class="cp-option-item">
+                                            <span class="cp-option-letter">{{ chr(65 + $i) }}</span>
+                                            <input type="text" name="options[]" value="{{ $opt }}"
+                                                placeholder="Opción {{ chr(65 + $i) }}">
+                                            <button type="button" class="cp-btn-remove" onclick="removeOption(this)">
+                                                <i data-lucide="x"></i>
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="cp-option-item">
+                                        <span class="cp-option-letter">A</span>
+                                        <input type="text" name="options[]" placeholder="Opción A">
+                                        <button type="button" class="cp-btn-remove" onclick="removeOption(this)"
+                                            style="visibility:hidden">
+                                            <i data-lucide="x"></i>
+                                        </button>
+                                    </div>
+                                    <div class="cp-option-item">
+                                        <span class="cp-option-letter">B</span>
+                                        <input type="text" name="options[]" placeholder="Opción B">
+                                        <button type="button" class="cp-btn-remove" onclick="removeOption(this)"
+                                            style="visibility:hidden">
+                                            <i data-lucide="x"></i>
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
+                            <button type="button" class="cp-btn-add" onclick="addOption()" id="btnAddOption">
+                                <i data-lucide="plus"></i>
+                                Añadir Opción
+                            </button>
+                        </div>
+                        <div class="cp-form-group">
+                            <div class="cp-label-row">
+                                <label for="correct_answer_mc">Respuesta Correcta <span
+                                        class="required">*</span></label>
+                            </div>
+                            <select id="correct_answer_mc" name="correct_answer">
+                                <option value="">Selecciona la respuesta correcta...</option>
+                            </select>
+                        </div>
+                        <div class="cp-form-row">
+                            <div class="cp-form-group">
+                                <div class="cp-label-row">
+                                    <label for="feedback_correct_mc">Feedback si acierta <span
+                                            class="hint">(opcional)</span></label>
+                                </div>
+                                <textarea id="feedback_correct_mc" name="feedback_correct"
+                                    placeholder="Ej: Correcto. El dolor precordial con irradiación es el signo clave.">{{ old('feedback_correct') }}</textarea>
+                            </div>
+                            <div class="cp-form-group">
+                                <div class="cp-label-row">
+                                    <label for="feedback_incorrect_mc">Feedback si falla <span
+                                            class="hint">(opcional)</span></label>
+                                </div>
+                                <textarea id="feedback_incorrect_mc" name="feedback_incorrect"
+                                    placeholder="Ej: Incorrecto. Revisa los síntomas del paciente.">{{ old('feedback_incorrect') }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Campos dinámicos: Verdadero / Falso --}}
+                    <div class="cp-question-fields" id="fields_TRUE_FALSE">
+                        <div class="cp-form-group">
+                            <div class="cp-label-row">
+                                <label>Respuesta Correcta <span class="required">*</span></label>
+                            </div>
+                            <div class="cp-attendee-selector">
+                                <div class="cp-attendee-option">
+                                    <input type="radio" name="correct_answer" id="tf_true" value="true" {{ old('correct_answer') === 'true' ? 'checked' : '' }}>
+                                    <label for="tf_true">
+                                        <span class="attendee-icon">✅</span>
+                                        <span class="attendee-label">Verdadero</span>
+                                    </label>
+                                </div>
+                                <div class="cp-attendee-option">
+                                    <input type="radio" name="correct_answer" id="tf_false" value="false" {{ old('correct_answer') === 'false' ? 'checked' : '' }}>
+                                    <label for="tf_false">
+                                        <span class="attendee-icon">❌</span>
+                                        <span class="attendee-label">Falso</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="cp-form-row">
+                            <div class="cp-form-group">
+                                <div class="cp-label-row">
+                                    <label>Feedback si acierta <span class="hint">(opcional)</span></label>
+                                </div>
+                                <textarea name="feedback_correct"
+                                    placeholder="Ej: Correcto.">{{ old('feedback_correct') }}</textarea>
+                            </div>
+                            <div class="cp-form-group">
+                                <div class="cp-label-row">
+                                    <label>Feedback si falla <span class="hint">(opcional)</span></label>
+                                </div>
+                                <textarea name="feedback_incorrect"
+                                    placeholder="Ej: Incorrecto.">{{ old('feedback_incorrect') }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Obligatoria --}}
+                    <div class="cp-form-group cp-random-config {{ $patient->randomize_questions ? 'visible' : '' }}"
+                        id="requiredField">
+                        <div class="cp-label-row">
+                            <label>¿Pregunta obligatoria?</label>
+                            <span class="help-tooltip">
+                                <span class="help-tooltip-icon">?</span>
+                                <span class="help-tooltip-bubble">
+                                    Si el test es aleatorio, las preguntas obligatorias aparecen siempre. Solo es
+                                    relevante si activaste la aleatorización.
+                                </span>
+                            </span>
+                        </div>
+                        <div class="cp-attendee-selector">
+                            <div class="cp-attendee-option">
+                                <input type="radio" name="is_required" id="req_no" value="0" {{ old('is_required', '0') === '0' ? 'checked' : '' }}>
+                                <label for="req_no">
+                                    <span class="attendee-label">No obligatoria</span>
+                                    <span class="attendee-desc">Puede aparecer o no en intentos aleatorios</span>
+                                </label>
+                            </div>
+                            <div class="cp-attendee-option">
+                                <input type="radio" name="is_required" id="req_yes" value="1" {{ old('is_required') === '1' ? 'checked' : '' }}>
+                                <label for="req_yes">
+                                    <span class="attendee-label">Obligatoria</span>
+                                    <span class="attendee-desc">Aparece siempre, cuenta dentro del límite</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cp-form-actions">
+                        <button type="button" class="btn btn-ghost" id="btnCancelEdit" onclick="cancelEdit()"
+                            style="display:none"> {{-- excepción: estado inicial --}}
+                            <i data-lucide="x"></i>
+                            Cancelar Edición
+                        </button>
+                        <button type="reset" class="btn btn-ghost" onclick="resetForm()">Limpiar</button>
+                        <button type="submit" class="btn btn-primary" id="btnSubmitQuestion">
+                            <i data-lucide="plus"></i>
+                            Añadir Pregunta
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+
+        {{-- ===== SIDEBAR ===== --}}
+        <aside class="create-patient-sidebar">
+            <div class="cp-sidebar-card">
+                <div class="cp-sidebar-title">Estado del Test</div>
+                <div class="cp-sidebar-details">
+                    <div>
+                        <div class="cp-sidebar-detail-label">Total preguntas</div>
+                        <div>{{ $questions->count() }}</div>
+                    </div>
+                    <div>
+                        <div class="cp-sidebar-detail-label">Obligatorias</div>
+                        <div>{{ $questions->where('is_required', true)->count() }}</div>
+                    </div>
+                    <div>
+                        <div class="cp-sidebar-detail-label">Intentos máximos</div>
+                        <div>
+                            {{ $patient->max_attempts === -1 ? 'Ilimitadas' : $patient->max_attempts }}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="cp-sidebar-detail-label">Aleatorización</div>
+                        <div>{{ $patient->randomize_questions ? 'Sí' : 'No' }}</div>
+                    </div>
+                    @if($patient->randomize_questions && $patient->questions_per_test)
+                        <div>
+                            <div class="cp-sidebar-detail-label">Preguntas por test</div>
+                            <div>{{ $patient->questions_per_test }}</div>
+                        </div>
+                    @endif
+                    <div>
+                        <div class="cp-sidebar-detail-label">Orden aleatorio</div>
+                        <div>{{ $patient->randomize_order ? 'Sí' : 'No' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cp-sidebar-card cp-sidebar-info">
+                <div class="cp-sidebar-info-icon"><i data-lucide="info"></i></div>
+                <div class="cp-sidebar-info-title">Tipos de Pregunta</div>
+                <div class="cp-sidebar-info-text">
+                    <strong>Opción múltiple</strong> — El alumno elige entre varias respuestas.<br><br>
+                    <strong>Verdadero/Falso</strong> — El alumno decide si una afirmación es cierta.<br><br>
+                    <strong>Pregunta abierta</strong> — El alumno responde con texto libre.
+                </div>
+            </div>
+        </aside>
+
     </div>
 
-    <x-slot:scripts>
-        <script src="{{ asset('js/patient-test.js') }}"></script>
-    </x-slot:scripts>
+    <x-slot name="scripts">
+        <script src="{{ asset('js/test-manage.js') }}"></script>
+    </x-slot>
+
 </x-layouts.app>

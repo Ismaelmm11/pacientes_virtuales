@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use Date;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -16,17 +14,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $last_name Apellidos del usuario.
  * @property string $email Correo electrónico único para login.
  * @property string $password Contraseña hasheada.
- * @property Date $birth_date Fecha de nacimiento del usuario.
+ * @property string $birth_date Fecha de nacimiento del usuario.
  * @property string $gender Género del usuario (opcional).
  * @property int $role_id Referencia al rol asignado.
+ * @property string $auth_at Sirve para saber como se ha creado el usuario.
  * @property-read string $full_name Accessor para nombre y apellidos.
  */
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
-
-    public $timestamps = false;
+    use Notifiable;
 
     /**
      * Deshabilitamos 'updated_at' porque no existe en la tabla
@@ -43,7 +40,8 @@ class User extends Authenticatable
         'password',
         'birth_date',
         'gender',
-        'role_id'
+        'role_id',
+        'auth_at'
     ];
 
     /**
@@ -58,7 +56,6 @@ class User extends Authenticatable
      * Los atributos que deben ser convertidos a tipos nativos
      */
     protected $casts = [
-        'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'birth_date' => 'date',
     ];
@@ -130,5 +127,52 @@ class User extends Authenticatable
     public function isStudent(): bool
     {
         return $this->hasRole(Role::STUDENT_ID);
+    }
+
+    /**
+     * Asignaturas en las que el usuario está inscrito como alumno.
+     * Uso: $user->enrolledSubjects
+     */
+    public function enrolledSubjects()
+    {
+        return $this->belongsToMany(Subject::class, 'subject_user', 'user_id', 'subject_id')
+            ->wherePivot('role', 'student');
+    }
+
+    /**
+     * Asignaturas en las que el usuario participa como profesor colaborador.
+     * Uso: $user->collaboratingSubjects
+     */
+    public function collaboratingSubjects()
+    {
+        return $this->belongsToMany(Subject::class, 'subject_user', 'user_id', 'subject_id')
+            ->wherePivot('role', 'collaborator');
+    }
+
+    /**
+     * Asignaturas creadas por este usuario (si es profesor propietario).
+     * Uso: $user->subjects
+     */
+    public function subjects()
+    {
+        return $this->hasMany(Subject::class, 'created_by_user_id');
+    }
+
+    /**
+     * Pacientes creados por este usuario (si es profesor).
+     * Uso: $user->patients
+     */
+    public function patients()
+    {
+        return $this->hasMany(Patient::class, 'created_by_user_id');
+    }
+
+    /**
+     * Intentos de simulación realizados por este usuario (si es alumno).
+     * Uso: $user->testAttempts
+     */
+    public function testAttempts()
+    {
+        return $this->hasMany(TestAttempt::class);
     }
 }

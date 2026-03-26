@@ -23,6 +23,15 @@ class StorePatientRequest extends FormRequest
             // Información del caso
             'case_title' => 'required|string|max:255',
             'learning_objectives' => 'nullable|string|max:1000',
+            'subject_id' => 'required|integer|exists:subjects,id',
+            'mode' => 'required|string|in:basic,advanced',
+            'attendee_type' => 'required|string|in:patient,companion',
+            'puede_inventar_datos_medicos' => 'nullable|boolean',
+            // Campos del acompañante (requeridos solo si attendee_type=companion)
+            'companion_name' => 'required_if:attendee_type,companion|nullable|string|max:200',
+            'companion_relation' => 'required_if:attendee_type,companion|nullable|string',
+            'companion_age' => 'nullable|integer|min:14|max:100',
+            'companion_gender' => 'nullable|string|in:masculino,femenino,otro',
             'patient_description' => 'required|string|max:255',
 
             // Identidad del paciente
@@ -44,6 +53,27 @@ class StorePatientRequest extends FormRequest
             'key_findings' => 'nullable|string|max:1500',
             'frase_inicial' => 'required_if:mode,basic|nullable|string|max:1000',
             'motivo_consulta' => 'required_if:mode,basic|nullable|string|max:1000',
+
+            //Medicamentos
+
+            'medications' => 'nullable|array',
+            'medications.*.name' => 'nullable|string|max:200',
+            'medications.*.dose' => 'nullable|string|max:200',
+            'medications.*.frequency' => 'nullable|string|max:200',
+            'medications.*.adherence' => 'nullable|string|in:total,parcial,nula',
+            'medications.*.adherence_detail' => 'nullable|string|max:500',
+            'medications.*.reveal' => 'nullable|string|in:espontaneo,pregunta,oculta,miente',
+            'medications.*.lie_text' => 'nullable|string|max:300',
+
+            // Vicios
+            'vices' => 'nullable|array',
+            'vices.*.name' => 'nullable|string|max:200',
+            'vices.*.reveal' => 'nullable|string|in:espontaneo,pregunta,oculta,miente',
+            'vices.*.lie_text' => 'nullable|string|max:300',
+
+            // Antecedentes familiares
+            'family_history' => 'nullable|string|max:2000',
+
 
             // Personalidad y comportamiento
             'personality_type' => 'required|string|in:colaborador,ansioso,reservado,demandante,minimizador,hipocondriaco,agresivo,deprimido,desconfiado,confuso,evasivo',
@@ -134,6 +164,11 @@ class StorePatientRequest extends FormRequest
             'ejemplo_coherencia.incoherente.required' => 'La respuesta incoherente es obligatoria.',
             'verbosity_custom' => 'descripción de verbosidad personalizada',
             'knowledge_custom' => 'descripción de conocimiento médico personalizada',
+
+            'subject_id.required' => 'Debes seleccionar una asignatura.',
+            'subject_id.exists' => 'La asignatura seleccionada no existe.',
+            'companion_name.required_if' => 'El nombre del acompañante es obligatorio.',
+            'companion_relation.required_if' => 'La relación del acompañante es obligatoria.',
         ];
     }
 
@@ -169,6 +204,10 @@ class StorePatientRequest extends FormRequest
             'ejemplo_coherencia.pregunta' => 'pregunta del ejemplo',
             'ejemplo_coherencia.coherente' => 'respuesta coherente',
             'ejemplo_coherencia.incoherente' => 'respuesta incoherente',
+            'subject_id' => 'asignatura',
+            'attendee_type' => 'tipo de consulta',
+            'companion_name' => 'nombre del acompañante',
+            'companion_relation' => 'relación del acompañante',
         ];
     }
 

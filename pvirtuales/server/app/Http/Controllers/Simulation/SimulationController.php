@@ -30,10 +30,43 @@ class SimulationController extends Controller
      * @param string $aiModel Clave del proveedor de IA (openai, claude, gemini, etc.)
      * @param int $patientId ID del paciente virtual
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
-     */
+     */ 
     public function start(string $aiModel, int $patientId)
     {
         $patient = Patient::with(['knowledgeBase'])->findOrFail($patientId);
+        $user = auth()->user();
+
+        // ── Control de acceso para alumnos ──────────────────────────────────
+        // Los profesores y admins pueden acceder siempre (para probar pacientes)
+        if (!$user->isTeacher() && !$user->isAdmin()) {
+
+            // El paciente debe estar publicado
+            if (!$patient->is_published) {
+                abort(403, 'Este paciente no está disponible.');
+            }
+
+            // El alumno debe estar matriculado en la asignatura del paciente
+            $enrolledSubjectIds = $user->enrolledSubjects()->pluck('subjects.id');
+            if (!$enrolledSubjectIds->contains($patient->subject_id)) {
+                abort(403, 'No estás matriculado en la asignatura de este paciente.');
+            }
+
+            // Comprobar intentos restantes solo si no hay ya uno pendiente
+            // (si hay uno pendiente lo reutilizamos y no consume un intento nuevo)
+            $pendingAttempt = \App\Models\TestAttempt::where('user_id', $user->id)
+                ->where('patient_id', $patient->id)
+                ->whereNull('final_score')
+                ->first();
+
+            if (!$pendingAttempt && $patient->max_attempts !== -1) {
+                $attemptsUsed = \App\Models\TestAttempt::where('user_id', $user->id)
+                    ->where('patient_id', $patient->id)
+                    ->count();
+                if ($attemptsUsed >= $patient->max_attempts) {
+                    return back()->with('error', 'Has agotado todos tus intentos para este paciente.');
+                }
+            }
+        }
 
         // Verificar que el paciente tiene los datos mínimos para funcionar
         if (!$patient->prompt || !$patient->prompt->prompt_content) {
@@ -44,30 +77,46 @@ class SimulationController extends Controller
             return back()->with('error', 'Este paciente no tiene una frase inicial configurada.');
         }
 
-        // Limpiar cualquier simulación previa
+        // Limpiar cualquier simulación previa en sesión
         Session::forget('chat_history');
 
-        // Construir el historial inicial con el prompt del sistema y la frase de bienvenida
+        // Construir el historial inicial: prompt de sistema + frase de bienvenida
         $chatHistory = [
             ['role' => 'system', 'content' => $patient->prompt->prompt_content],
             ['role' => 'assistant', 'content' => $patient->knowledgeBase->frase_inicial],
         ];
 
-        // Guardar el estado de la simulación en sesión
+        // Guardar estado de la simulación en sesión
         Session::put('chat_history', $chatHistory);
         Session::put('current_ai', $aiModel);
         Session::put('current_patient_id', $patient->id);
+
+        // ── Crear TestAttempt solo para alumnos ─────────────────────────────
+        // Los profesores no generan registros; usan la simulación para probar
+        if (!$user->isTeacher() && !$user->isAdmin()) {
+            $attempt = \App\Models\TestAttempt::create([
+                'user_id'    => $user->id,
+                'patient_id' => $patient->id,
+            ]);
+            Session::put('current_attempt_id', $attempt->id);
+        } else {
+            Session::forget('current_attempt_id');
+        }
 
         return view('pages.simulation.chat', [
             'aiModel' => $aiModel,
             'patient' => [
                 'id' => $patient->id,
-                'name' => $this->extractPatientName($patient),
+                'name' => $this->extractPatientName($patient)[0],
                 'case_title' => $patient->case_title,
+                'patient_description' => $patient->patient_description,
+                'isTeacher' => $user->isTeacher() || $user->isAdmin(),
             ],
             'history' => $chatHistory,
         ]);
     }
+
+
 
     /**
      * Procesa un mensaje del usuario y obtiene la respuesta de la IA.
@@ -128,10 +177,10 @@ class SimulationController extends Controller
      * @param Patient $patient
      * @return string
      */
-    private function extractPatientName(Patient $patient): string
+    private function extractPatientName(Patient $patient): array
     {
         $parts = explode(' - ', $patient->case_title);
 
-        return $parts[0] ?? 'Paciente';
+        return $parts;
     }
 }

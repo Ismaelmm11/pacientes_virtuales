@@ -5,7 +5,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SendInvitateLinkRequest;
 use App\Http\Requests\CreateAccountRequest;
 use App\Models\Role;
 use App\Models\User;

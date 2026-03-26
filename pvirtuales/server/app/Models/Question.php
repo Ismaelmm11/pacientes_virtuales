@@ -34,11 +34,13 @@ class Question extends Model
         'points',
         'feedback_correct',
         'feedback_incorrect',
+        'is_required',
     ];
 
     protected $casts = [
         'options' => 'array',
         'points'  => 'decimal:2',
+        'is_required' => 'boolean',
     ];
 
     /* ===========================

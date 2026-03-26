@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -27,7 +26,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class PatientRoleIdentity extends Model
 {
-    use HasFactory;
+
 
     const UPDATED_AT = null;
 
@@ -45,11 +44,18 @@ class PatientRoleIdentity extends Model
         'contexto_sociolaboral',
         'nivel_conocimiento',
         'campos_custom',
+        'patient_name',
+        'patient_age',
+        'patient_gender',
+        'occupation',
+        'personal_context',
+        'education_level',
+
     ];
 
     protected $casts = [
         'es_acompanante' => 'boolean',
-        'campos_custom'  => 'array',
+        'campos_custom' => 'array',
     ];
 
     public function patient()

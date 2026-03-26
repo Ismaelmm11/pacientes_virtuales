@@ -16,8 +16,8 @@
 
     <div class="create-patient-wrapper">
 
-        <x-navbar backRoute="patients.index" backLabel="Volver a Mis Pacientes" rightLabel="Modo Avanzado" />
-
+        <x-navbar backRoute="teacher.patients.index" backLabel="Volver a Mis Pacientes" rightLabel="Modo Avanzado" />
+        
         <div class="form-container">
             <div class="form-header">
                 <h1>🩺 Crear Paciente Virtual — Modo Avanzado</h1>

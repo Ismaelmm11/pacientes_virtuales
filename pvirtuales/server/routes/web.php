@@ -6,8 +6,11 @@ use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\Teacher\TeacherDashboardController;
 use App\Http\Controllers\Consultation\ConsultationController;
+use App\Http\Controllers\Teacher\TeacherFollowupController;
+use App\Http\Controllers\Student\StudentDashboardController;
 use App\Http\Controllers\Simulation\SimulationController;
 use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\Teacher\SubjectController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,7 +46,7 @@ Route::get('/', function () {
     return match (true) {
         auth()->user()->isAdmin() => redirect()->route('teacher.dashboard'), // admin usa teacher por ahora
         auth()->user()->isTeacher() => redirect()->route('teacher.dashboard'),
-        default => redirect()->route('teacher.dashboard'), // alumno pendiente
+        default => redirect()->route('student.dashboard'), // alumno pendiente
     };
 })->name('home');
 
@@ -57,9 +60,7 @@ Route::middleware(['guest'])->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
 
-    // Registro por invitación (flujo de dos pasos)
-    Route::get('/registro', [RegistrationController::class, 'showPreRegisterForm'])->name('register.start');
-    Route::post('/registro', [RegistrationController::class, 'sendInviteLink'])->name('register.sendlink');
+    // Registro por invitación 
     Route::get('/registro/{token}', [RegistrationController::class, 'showRegistrationForm'])->name('register.form');
     Route::post('/registro/crear', [RegistrationController::class, 'createAccount'])->name('register.create');
 });
@@ -101,19 +102,20 @@ Route::middleware(['auth', 'role.teacher'])
         // ✅ Dashboard del profesor
         Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
 
-        // --- Asignaturas [PENDIENTE] ---
-        // Route::prefix('asignaturas')->name('subjects.')->group(function () {
-        //     Route::get('/', fn() => view('pages.teacher.subjects.index'))->name('index');
-        //     Route::get('/crear', fn() => view('pages.teacher.subjects.create'))->name('create');
-        //     Route::post('/', fn() => null)->name('store');
-        //     Route::get('/{subject}', fn() => view('pages.teacher.subjects.show'))->name('show');
-        //     Route::get('/{subject}/editar', fn() => view('pages.teacher.subjects.edit'))->name('edit');
-        //     Route::put('/{subject}', fn() => null)->name('update');
-        //     Route::delete('/{subject}', fn() => null)->name('destroy');
-        //     Route::post('/{subject}/alumnos', fn() => null)->name('students.enroll');
-        //     Route::delete('/{subject}/alumnos/{user}', fn() => null)->name('students.unenroll');
-        // });
-    
+        Route::prefix('asignaturas')->name('subjects.')->group(function () {
+            Route::get('/', [SubjectController::class, 'index'])->name('index');
+            Route::get('/crear', [SubjectController::class, 'create'])->name('create');
+            Route::post('/', [SubjectController::class, 'store'])->name('store');
+            Route::get('/{subject}', [SubjectController::class, 'show'])->name('show');
+            Route::get('/{subject}/editar', [SubjectController::class, 'edit'])->name('edit');
+            Route::put('/{subject}', [SubjectController::class, 'update'])->name('update');
+            Route::delete('/{subject}', [SubjectController::class, 'destroy'])->name('destroy');
+            Route::post('/{subject}/alumnos', [SubjectController::class, 'enrollStudent'])->name('students.enroll');
+            Route::delete('/{subject}/alumnos/{user}', [SubjectController::class, 'unenrollStudent'])->name('students.unenroll');
+            Route::post('/{subject}/colaboradores', [SubjectController::class, 'inviteCollaborator'])->name('collaborators.invite');
+            Route::delete('/{subject}/colaboradores/{user}', [SubjectController::class, 'removeCollaborator'])->name('collaborators.remove');
+        });
+
         // --- Pacientes del profesor ---
         Route::prefix('pacientes')->name('patients.')->group(function () {
 
@@ -139,24 +141,36 @@ Route::middleware(['auth', 'role.teacher'])
             Route::post('/{patient}/publicar', [PatientController::class, 'publish'])->name('publish');
 
             // ✅ Eliminar
-            Route::delete('/{patient}', [PatientController::class, 'destroy'])->name('destroy');
+            Route::delete('/{patient}/{origen}', [PatientController::class, 'destroy'])->name('destroy');
+
+            // ✅ Editar paciente
+            Route::get('/{patient}/editar', [PatientController::class, 'edit'])->name('edit');
+            Route::put('/{patient}', [PatientController::class, 'update'])->name('update');
+
+
 
             // ✅ Test de evaluación
+    
+            Route::put('/{patient}/test/config', [QuestionController::class, 'updateConfig'])->name('test.config');
+
             Route::get('/{patient}/test', [QuestionController::class, 'manage'])->name('test');
             Route::post('/{patient}/test', [QuestionController::class, 'store'])->name('test.store');
             Route::delete('/{patient}/test/{question}', [QuestionController::class, 'destroy'])->name('test.destroy');
+            Route::put('/{patient}/test/{question}', [QuestionController::class, 'update'])->name('test.update');
+
         });
 
-        // --- Seguimiento [PENDIENTE] ---
-        // Route::prefix('consultas')->name('consultations.')->group(function () {
-        //     Route::get('/', fn() => view('pages.teacher.consultations.index'))->name('index');
-        //     Route::get('/{attempt}', fn() => view('pages.teacher.consultations.show'))->name('show');
-        // });
-    
-        // Route::prefix('resultados')->name('results.')->group(function () {
-        //     Route::get('/', fn() => view('pages.teacher.results.index'))->name('index');
-        //     Route::get('/{attempt}', fn() => view('pages.teacher.results.show'))->name('show');
-        // });
+        // --- Seguimiento ---
+        Route::prefix('consultas')->name('consultations.')->group(function () {
+            Route::get('/', [TeacherFollowupController::class, 'consultations'])->name('index');
+        });
+
+        Route::prefix('resultados')->name('results.')->group(function () {
+            Route::get('/', [TeacherFollowupController::class, 'results'])->name('index');
+            Route::get('/{attempt}', [TeacherFollowupController::class, 'showResult'])->name('show');
+            Route::post('/{attempt}/calificar', [TeacherFollowupController::class, 'grade'])->name('grade');
+        });
+
     });
 
 /* ====================================================================
@@ -164,23 +178,22 @@ Route::middleware(['auth', 'role.teacher'])
    Middleware: auth + role.student
    ==================================================================== */
 
-// Route::middleware(['auth', 'role.student'])
-//     ->prefix('alumno')
-//     ->name('student.')
-//     ->group(function () {
-//         Route::get('/dashboard', fn() => view('pages.student.dashboard'))->name('dashboard');
-//         Route::prefix('asignaturas')->name('subjects.')->group(function () {
-//             Route::get('/', fn() => view('pages.student.subjects.index'))->name('index');
-//             Route::get('/{subject}', fn() => view('pages.student.subjects.show'))->name('show');
-//         });
-//         Route::prefix('consultas')->name('consultations.')->group(function () {
-//             Route::get('/', fn() => view('pages.student.consultations.index'))->name('index');
-//             Route::get('/{attempt}', fn() => view('pages.student.consultations.show'))->name('show');
-//         });
-//         Route::prefix('resultados')->name('results.')->group(function () {
-//             Route::get('/', fn() => view('pages.student.results.index'))->name('index');
-//         });
-//     });
+Route::middleware(['auth', 'role.student'])
+    ->prefix('alumno')
+    ->name('student.')
+    ->group(function () {
+        Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/pacientes', [StudentDashboardController::class, 'patients'])->name('patients.index');
+
+        // Envío del cuestionario por parte del alumno
+        Route::post('/test/{patient}/submit', [QuestionController::class, 'submit'])->name('patients.test.submit');
+
+        Route::get('/asignaturas', [StudentDashboardController::class, 'subjects'])->name('subjects.index');
+        Route::get('/consultas', [StudentDashboardController::class, 'consultations'])->name('consultations.index');
+        Route::get('/resultados', [StudentDashboardController::class, 'results'])->name('results.index');
+
+
+    });
 
 /* ====================================================================
    7. COMPARTIDAS — Simulación y chat (auth requerido)

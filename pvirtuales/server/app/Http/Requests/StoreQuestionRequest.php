@@ -26,7 +26,7 @@ class StoreQuestionRequest extends FormRequest
         $rules = [
             'question_text' => 'required|string|max:1000',
             'question_type' => 'required|string|in:MULTIPLE_CHOICE,TRUE_FALSE,OPEN_ENDED',
-            'points'        => 'required|numeric|min:0.01|max:100',
+            'is_required'   => 'boolean',
         ];
 
         // Reglas específicas según el tipo
@@ -61,8 +61,6 @@ class StoreQuestionRequest extends FormRequest
             'question_type.required' => 'Debes seleccionar un tipo de pregunta.',
             'question_type.in'       => 'El tipo de pregunta no es válido.',
             'points.required'        => 'La puntuación es obligatoria.',
-            'points.min'             => 'La puntuación debe ser mayor que 0.',
-            'points.max'             => 'La puntuación no puede exceder 100.',
             'options.required'       => 'Las opciones son obligatorias para preguntas de opción múltiple.',
             'options.min'            => 'Debes añadir al menos 2 opciones.',
             'options.max'            => 'No puedes añadir más de 6 opciones.',

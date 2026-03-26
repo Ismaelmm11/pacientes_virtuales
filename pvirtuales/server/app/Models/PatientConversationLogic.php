@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -19,10 +18,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property array|null $interacciones_trigger Reglas generales "Si X → Entonces Y" (JSON).
  * @property array $eventos_cierre Condiciones de finalización de la consulta (JSON).
  * @property string|null $instrucciones_especiales Reglas adicionales en texto libre.
+ * @property array|null $frases_limite Frases que el paciente dice cuando se le presiona demasiado o se hace una pregunta inapropiada (JSON).
  */
 class PatientConversationLogic extends Model
 {
-    use HasFactory;
 
     const UPDATED_AT = null;
 
@@ -36,6 +35,7 @@ class PatientConversationLogic extends Model
         'interacciones_trigger',
         'eventos_cierre',
         'instrucciones_especiales',
+        'frases_limite'
     ];
 
     protected $casts = [
@@ -44,6 +44,7 @@ class PatientConversationLogic extends Model
         'contradicciones'       => 'array',
         'interacciones_trigger' => 'array',
         'eventos_cierre'        => 'array',
+        'frases_limite'         => 'array',
     ];
 
     public function patient()

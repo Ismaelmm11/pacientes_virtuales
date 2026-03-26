@@ -56,7 +56,7 @@
     gap: 5px;
     background: rgba(91, 231, 196, 0.12);
     border: 1px solid rgba(91, 231, 196, 0.3);
-    color: #2BA88A;
+    color: #2ba88a;
     padding: 3px 10px;
     border-radius: 999px;
     font-size: 0.75rem;
@@ -83,12 +83,40 @@
     animation: shakeAlert 0.45s ease;
 }
 
+.cp-alert-success {
+    display: flex;
+    gap: 12px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 24px;
+}
+.cp-alert-success-icon {
+    color: #16a34a;
+}
+.cp-alert-success-text {
+    color: #15803d;
+    font-size: 0.9rem;
+}
+
 @keyframes shakeAlert {
-    0%, 100% { transform: translateX(0); }
-    20%       { transform: translateX(-5px); }
-    40%       { transform: translateX(5px); }
-    60%       { transform: translateX(-3px); }
-    80%       { transform: translateX(3px); }
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    20% {
+        transform: translateX(-5px);
+    }
+    40% {
+        transform: translateX(5px);
+    }
+    60% {
+        transform: translateX(-3px);
+    }
+    80% {
+        transform: translateX(3px);
+    }
 }
 
 .cp-alert-icon {
@@ -241,7 +269,9 @@
     font-family: inherit;
     color: var(--color-text);
     background: var(--color-surface);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .cp-form-group input:focus,
@@ -261,6 +291,10 @@
     min-height: 90px;
     resize: vertical;
     line-height: 1.6;
+}
+
+.cp-form-inline {
+    display: inline;
 }
 
 /* Requerido y hint */
@@ -298,7 +332,9 @@
     color: var(--color-text-muted);
     font-size: 0.7rem;
     font-weight: 700;
-    transition: background 0.2s, color 0.2s;
+    transition:
+        background 0.2s,
+        color 0.2s;
     user-select: none;
     line-height: 1;
 }
@@ -330,7 +366,7 @@
 
 /* Flecha del bocadillo */
 .help-tooltip-bubble::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 100%;
     left: 50%;
@@ -359,13 +395,19 @@
 }
 
 @keyframes tooltipFadeIn {
-    from { opacity: 0; transform: translateX(-50%) translateY(4px); }
-    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
 }
 
 .help-tooltip-bubble strong {
     display: block;
-    color: #5BE7C4;
+    color: #5be7c4;
     font-size: 0.8rem;
     margin-bottom: 6px;
     font-weight: 700;
@@ -373,7 +415,7 @@
 
 .help-tooltip-bubble .example {
     background: rgba(255, 255, 255, 0.07);
-    border-left: 2px solid #5BE7C4;
+    border-left: 2px solid #5be7c4;
     border-radius: 4px;
     padding: 6px 10px;
     margin-top: 6px;
@@ -414,7 +456,10 @@
     border: 1.5px solid var(--color-border);
     border-radius: var(--radius-lg);
     cursor: pointer;
-    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    transition:
+        border-color 0.2s,
+        background 0.2s,
+        box-shadow 0.2s;
     text-align: center;
 }
 
@@ -463,8 +508,14 @@
 }
 
 @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-8px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .cp-companion-label {
@@ -509,7 +560,10 @@
     font-size: 0.86rem;
     font-weight: 500;
     color: var(--color-text-muted);
-    transition: border-color 0.2s, background 0.2s, color 0.2s;
+    transition:
+        border-color 0.2s,
+        background 0.2s,
+        color 0.2s;
     text-align: center;
     line-height: 1.3;
 }
@@ -697,7 +751,7 @@ input[type="range"]::-moz-range-thumb {
 
 /* Estado vacío */
 .cp-dynamic-list:empty::before {
-    content: 'Pulsa el botón de abajo para añadir elementos';
+    content: "Pulsa el botón de abajo para añadir elementos";
     display: flex;
     align-items: center;
     justify-content: center;
@@ -767,7 +821,9 @@ input[type="range"]::-moz-range-thumb {
     color: var(--color-text-subtle);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: background 0.2s, color 0.2s;
+    transition:
+        background 0.2s,
+        color 0.2s;
     margin-top: 22px; /* Alinea con el primer input (label + gap) */
     flex-shrink: 0;
 }
@@ -796,7 +852,10 @@ input[type="range"]::-moz-range-thumb {
     font-size: 0.85rem;
     font-weight: 600;
     font-family: inherit;
-    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    transition:
+        border-color 0.2s,
+        color 0.2s,
+        background 0.2s;
     margin-top: 10px;
 }
 
@@ -809,6 +868,12 @@ input[type="range"]::-moz-range-thumb {
 .cp-btn-add i {
     width: 15px;
     height: 15px;
+}
+
+.btn-published {
+    background: var(--color-success);
+    color: white;
+    cursor: default;
 }
 
 /* ==========================================================================
@@ -935,6 +1000,18 @@ input[type="range"]::-moz-range-thumb {
     margin-bottom: 12px;
 }
 
+.cp-sidebar-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 0.88rem;
+}
+.cp-sidebar-detail-label {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    margin-bottom: 2px;
+}
+
 /* Navegación del sidebar */
 .cp-sidebar-nav {
     display: flex;
@@ -952,7 +1029,9 @@ input[type="range"]::-moz-range-thumb {
     font-weight: 500;
     color: var(--color-text-muted);
     text-decoration: none;
-    transition: background 0.15s, color 0.15s;
+    transition:
+        background 0.15s,
+        color 0.15s;
 }
 
 .cp-sidebar-link i {
@@ -968,7 +1047,7 @@ input[type="range"]::-moz-range-thumb {
 
 .cp-sidebar-link.active {
     background: rgba(91, 231, 196, 0.1);
-    color: #2BA88A;
+    color: #2ba88a;
     font-weight: 600;
 }
 
@@ -1007,8 +1086,152 @@ input[type="range"]::-moz-range-thumb {
     line-height: 1.55;
 }
 
+.cp-steps-list {
+    padding-left: 16px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.cp-steps-list a {
+    color: var(--color-primary);
+}
+
+.cp-prompt-hidden { display: none; }
+
+.p-salvaje {
+    text-align: center;
+    color: var(--color-text-muted);
+    padding: 40px 0;
+}
+
 /* ==========================================================================
-   16. RESPONSIVE
+   16. PREVIEW — Grid de acciones y bloque del prompt
+   ========================================================================== */
+
+/* Grid de 3 acciones (probar, cuestionario, editar) */
+.cp-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 8px;
+    margin-bottom: 20px;
+}
+
+/* Cada tarjeta de acción */
+.cp-action-card {
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cp-action-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cp-action-card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+}
+
+.cp-action-card-desc {
+    font-size: 0.83rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    margin: 0;
+    flex: 1;
+}
+
+.cp-action-card-footer {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: auto;
+}
+
+/* Stats del prompt */
+.cp-prompt-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.cp-prompt-stat {
+    flex: 1;
+    min-width: 100px;
+    background: var(--color-surface-alt);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    text-align: center;
+}
+
+.cp-prompt-stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-primary-dark);
+}
+
+.cp-prompt-stat-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+}
+
+/* Toggle vista del prompt */
+.cp-prompt-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    align-items: center;
+}
+
+.cp-prompt-toggle-right {
+    margin-left: auto;
+}
+
+/* Contenedor del prompt */
+.cp-prompt-box {
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.cp-prompt-rendered {
+    padding: 24px;
+    line-height: 1.7;
+    font-size: 0.88rem;
+}
+
+.cp-prompt-source {
+    
+    padding: 24px;
+    margin: 0;
+    white-space: pre-wrap;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    background: #0f172a;
+    color: #e2e8f0;
+    overflow-x: auto;
+    font-family: "Fira Code", "Courier New", monospace;
+}
+
+.cp-action-select {
+    flex: 1;
+    font-size: 0.83rem;
+}
+
+/* ==========================================================================
+   17. RESPONSIVE
    ========================================================================== */
 
 @media (max-width: 1024px) {

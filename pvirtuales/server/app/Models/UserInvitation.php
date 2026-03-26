@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -10,21 +9,17 @@ use Illuminate\Database\Eloquent\Model;
  * * @property int $id
  * @property string $email Correo electrónico al que se envía la invitación.
  * @property string $token Identificador único para el enlace de registro.
- */
+ * @property int $role_id ID del rol que se le asignará al usuario invitado.
+ * @property int $invited_by_user_id ID del usuario que realiza la invitación.
+ * @property int $subject_id ID de la asignatura a la que es invitado.
+ * @property \Carbon\Carbon $created_at Fecha de creación de la invitación.
+ */ 
+
 
 class UserInvitation extends Model
 {
-    use HasFactory;
-
-    public $timestamps = false;
-
     // Le decimos a Laravel que NO use la columna 'updated_at'
     const UPDATED_AT = null;
-
-    /**
-     * El nombre de la tabla.
-     */
-    protected $table = 'user_invitations';
 
     /**
      * Los campos que permitimos rellenar.
@@ -32,5 +27,27 @@ class UserInvitation extends Model
     protected $fillable = [
         'email',
         'token',
+        'role_id',
+        'invited_by_user_id',
+        'subject_id',
     ];
+
+    /* ===========================
+     * RELACIONES
+     * =========================== */
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function invitedBy()
+    {
+        return $this->belongsTo(User::class, 'invited_by_user_id');
+    }
+
+    public function subject()
+    {
+        return $this->belongsTo(Subject::class);
+    }
 }

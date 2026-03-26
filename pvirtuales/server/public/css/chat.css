@@ -37,7 +37,7 @@
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: bold;
-    color: white;
+    color: var(--color-primary);
     text-transform: uppercase;
 }
 
@@ -149,4 +149,176 @@
     text-decoration: none;
     font-weight: 600;
     font-size: 0.9rem;
+}
+
+/* ==================== HEADER ==================== */
+.chat-header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* ==================== FOOTER ALUMNO ==================== */
+.chat-footer-student {
+    padding: 16px 20px;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin: 20px auto;
+    width: 1000px;
+}
+
+.btn-finish {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 32px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s, transform 0.15s;
+}
+
+.btn-finish:hover {
+    background: #c0392b;
+    transform: scale(1.02);
+}
+
+.btn-finish:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-go-test {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 32px;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+}
+
+.btn-go-test.active {
+    display: flex;
+}
+
+.btn-go-test:hover {
+    background: var(--color-primary-dark);
+    transform: scale(1.02);
+}
+
+.chat-hidden {
+    display: none;
+}
+
+/* ==================== MODAL DESPEDIDA ==================== */
+.farewell-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.farewell-overlay.active {
+    display: flex;
+}
+
+.farewell-modal {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: fadeIn 0.2s ease;
+}
+
+.farewell-modal-header h3 {
+    margin: 0 0 8px;
+    font-size: 1.2rem;
+    color: var(--color-text);
+}
+
+.farewell-modal-header p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #666;
+    line-height: 1.5;
+}
+
+.farewell-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    min-height: 100px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.farewell-input:focus {
+    border-color: var(--color-primary);
+}
+
+.farewell-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-farewell-cancel {
+    padding: 10px 20px;
+    border: 1.5px solid #e9ecef;
+    background: white;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: inherit;
+    color: #666;
+    transition: background 0.2s;
+}
+
+.btn-farewell-cancel:hover {
+    background: #f8f9fa;
+}
+
+.btn-farewell-send {
+    padding: 10px 20px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
+}
+
+.btn-farewell-send:hover {
+    background: #c0392b;
 }

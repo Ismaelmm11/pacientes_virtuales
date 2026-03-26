@@ -1,0 +1,411 @@
+/*
+|--------------------------------------------------------------------------
+| Auth CSS — Páginas de login y registro
+|--------------------------------------------------------------------------
+|
+| Layout de dos paneles:
+|   Izquierda → Panel de marca oscuro con gradiente
+|   Derecha   → Panel blanco con el formulario
+|
+| Usa las variables CSS de style.css (--color-primary, --gradient-primary, etc.)
+|
+*/
+
+/* ================================================================
+   OVERRIDE DEL LAYOUT
+   El auth-wrapper se fija en toda la pantalla, anulando el
+   padding del content-area del layout principal.
+   ================================================================ */
+
+.auth-wrapper {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    z-index: 100;
+    background: #f5f7fa;
+}
+
+/* ================================================================
+   PANEL IZQUIERDO — Branding
+   ================================================================ */
+
+.auth-brand {
+    width: 45%;
+    background: #1e2a35; /* --sidebar-bg */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+/* Destellos de color de fondo (sin imágenes) */
+.auth-brand::before {
+    content: "";
+    position: absolute;
+    top: -120px;
+    right: -120px;
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(
+        circle,
+        rgba(91, 231, 196, 0.14),
+        transparent 70%
+    );
+    pointer-events: none;
+}
+
+.auth-brand::after {
+    content: "";
+    position: absolute;
+    bottom: -100px;
+    left: -80px;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(
+        circle,
+        rgba(79, 193, 233, 0.1),
+        transparent 70%
+    );
+    pointer-events: none;
+}
+
+/* Logo */
+.auth-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 56px;
+}
+
+.auth-logo-icon {
+    width: 42px;
+    height: 42px;
+    background: var(--gradient-primary);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1e2a35;
+}
+
+.auth-logo-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2.2;
+}
+
+.auth-logo-text {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+.auth-logo-text span {
+    color: #5be7c4;
+}
+
+/* Titular principal */
+.auth-tagline {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.3;
+    margin-bottom: 18px;
+    letter-spacing: -0.02em;
+    text-align: center;
+}
+
+.auth-tagline-accent {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.auth-brand-desc {
+    font-size: 0.9rem;
+    color: #b8c5d0; /* --sidebar-text */
+    line-height: 1.7;
+    max-width: 300px;
+    margin-bottom: 48px;
+    text-align: center;
+}
+
+/* Bullets de características */
+.auth-features {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-align: center;
+    align-items: center;
+}
+
+.auth-feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #b8c5d0;
+    font-size: 0.85rem;
+    text-align: center;
+    width: 69%;
+}
+
+.auth-feature-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #5be7c4;
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+/* ================================================================
+   PANEL DERECHO — Formulario
+   ================================================================ */
+
+.auth-form-panel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    overflow-y: auto; /* scroll para formularios largos (registro) */
+}
+
+.auth-form-box {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Encabezado del formulario */
+.auth-form-title {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+}
+
+.auth-form-subtitle {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-bottom: 32px;
+    line-height: 1.5;
+}
+
+/* Chip con el email (en la página de completar registro) */
+.auth-email-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(91, 231, 196, 0.08);
+    border: 1.5px solid rgba(91, 231, 196, 0.25);
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 0.85rem;
+    color: var(--color-text);
+    margin-bottom: 28px;
+    font-weight: 500;
+}
+
+.auth-email-chip-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #5be7c4;
+    flex-shrink: 0;
+}
+
+/* ---- Campos ---- */
+.auth-field {
+    margin-bottom: 18px;
+}
+
+.auth-field label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+}
+
+.auth-field input,
+.auth-field select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1.5px solid var(--color-border);
+    background: #ffffff;
+    color: var(--color-text);
+    font-size: 0.9rem;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.auth-field input::placeholder {
+    color: var(--color-text-subtle);
+}
+
+.auth-field input:focus,
+.auth-field select:focus {
+    outline: none;
+    border-color: #5be7c4;
+}
+
+.auth-field input.is-invalid,
+.auth-field select.is-invalid {
+    border-color: var(--color-danger);
+}
+
+.auth-field-error {
+    font-size: 0.78rem;
+    color: var(--color-danger);
+    margin-top: 5px;
+    display: block;
+}
+
+/* Dos columnas para nombre y apellidos */
+.auth-fields-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* ---- Checkbox "Recordarme" ---- */
+.auth-remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.auth-remember input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: #5be7c4;
+    cursor: pointer;
+}
+
+.auth-remember label {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    user-select: none;
+}
+
+/* ---- Botón principal ---- */
+.auth-btn {
+    width: 100%;
+    padding: 11px 20px;
+    background: var(--gradient-primary);
+    color: #1e2a35;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition:
+        opacity 0.15s,
+        transform 0.1s;
+    font-family: inherit;
+    letter-spacing: 0.01em;
+}
+
+.auth-btn:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+}
+.auth-btn:active {
+    transform: translateY(0);
+}
+
+/* ---- Links y footer ---- */
+.auth-links {
+    margin-top: 20px;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+.auth-links a {
+    color: var(--color-text);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-links a:hover {
+    color: #5be7c4;
+}
+
+.auth-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    margin-top: 16px;
+    transition: color 0.15s;
+}
+
+.auth-back-link:hover {
+    color: var(--color-text);
+}
+
+/* ---- Alert de éxito dentro del form ---- */
+.auth-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.auth-alert-success {
+    background: rgba(91, 231, 196, 0.08);
+    border: 1.5px solid rgba(91, 231, 196, 0.3);
+    color: var(--color-text);
+}
+
+.auth-alert-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #5be7c4;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+/* ---- Separador ---- */
+.auth-divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: 20px 0;
+}
+
+/* ================================================================
+   RESPONSIVE — En móvil solo se muestra el panel del formulario
+   ================================================================ */
+@media (max-width: 768px) {
+    .auth-brand {
+        display: none;
+    }
+    .auth-form-panel {
+        padding: 24px 20px;
+    }
+    .auth-fields-row {
+        grid-template-columns: 1fr;
+    }
+}

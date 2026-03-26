@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Patient;
-use App\Models\PatientType;
 use App\Models\PatientKnowledgeBase;
 use App\Models\PatientRoleIdentity;
 use App\Models\PatientPsychology;
@@ -15,19 +14,17 @@ use Illuminate\Support\Facades\DB;
 /**
  * Servicio para gestionar la lógica de negocio de los Pacientes Virtuales.
  *
- * Centraliza la creación completa de un paciente, rellenando TODAS las tablas
- * intermedias (identity, psychology, knowledge_base, conversation_logic)
+ * Centraliza la creación y edición completa de un paciente, rellenando TODAS
+ * las tablas intermedias (identity, psychology, knowledge_base, conversation_logic)
  * y generando el prompt final en patient_prompts.
  *
- * Tanto el Modo Básico como el Avanzado pasan por aquí. La diferencia es que
- * el Básico envía menos campos y este servicio rellena el resto con defaults
- * inteligentes.
+ * FLUJO CREACIÓN:
+ * Formulario → StorePatientRequest → PatientController → createPatient() → 5 tablas → Prompt
  *
- * FLUJO:
- * Formulario → StorePatientRequest (validación) → PatientController
- * → PatientService::createPatient() → Rellena 5 tablas → PromptGeneratorService
+ * FLUJO EDICIÓN:
+ * Formulario → UpdatePatientRequest → PatientController → updatePatient() → 5 tablas → Prompt
  *
- * TABLAS QUE RELLENA:
+ * TABLAS QUE GESTIONA:
  * 1. patients                     — Registro principal
  * 2. patient_role_identity        — Quién es, acompañante, contexto
  * 3. patient_psychology           — Personalidad, comunicación, reglas
@@ -45,18 +42,12 @@ class PatientService
     }
 
     /* =================================================================
-     * MÉTODO PÚBLICO PRINCIPAL
+     * MÉTODOS PÚBLICOS PRINCIPALES
      * ================================================================= */
 
     /**
      * Crea un paciente completo con todos sus datos asociados.
-     *
-     * Todo se ejecuta dentro de una transacción DB. Si cualquier paso
-     * falla, se hace rollback completo.
-     *
-     * @param array $data  Datos validados del StorePatientRequest
-     * @param int   $userId ID del usuario creador (profesor)
-     * @return Patient El paciente con todas sus relaciones cargadas
+     * Todo se ejecuta dentro de una transacción DB.
      */
     public function createPatient(array $data, int $userId): Patient
     {
@@ -64,52 +55,169 @@ class PatientService
 
             $mode = $data['mode'] ?? 'basic';
 
-            // En Modo Básico, chief_complaint actúa como frase inicial del paciente
             if ($mode === 'basic') {
                 $data['frase_inicial'] = $data['frase_inicial']
                     ?? $data['chief_complaint']
                     ?? 'Hola doctor, vengo porque no me encuentro bien.';
-
                 $data['attendee_type'] = $data['attendee_type'] ?? 'patient';
             }
 
-            // 2. Registro principal en patients
             $patient = Patient::create([
                 'case_title' => $data['case_title'],
-                'patient_description' => $data['patient_description'] ?? null, // NUEVO
+                'patient_description' => $data['patient_description'] ?? null,
                 'created_by_user_id' => $userId,
-                'subject_id' => 1,
+                'subject_id' => $data['subject_id'],
                 'mode' => $mode,
                 'learning_objectives' => $data['learning_objectives'] ?? null,
                 'puede_inventar_datos_medicos' => $data['puede_inventar_datos_medicos'] ?? false,
                 'initial_message' => $data['frase_inicial'],
             ]);
 
-            // 3-6. Tablas intermedias
             $this->createRoleIdentity($patient, $data);
             $this->createPsychology($patient, $data, $mode);
             $this->createKnowledgeBase($patient, $data, $mode);
             $this->createConversationLogic($patient, $data, $mode);
-
-            // 7. Generar prompt Markdown y guardarlo
+            $this->createCoherenceExample($patient, $data);
             $this->generateAndStorePrompt($patient, $data);
 
             return $patient;
         });
     }
 
-    /* =================================================================
-     * TABLA: patient_role_identity
-     * ================================================================= */
+    /**
+     * Actualiza un paciente existente y regenera el prompt.
+     * No modifica: created_by_user_id, mode, subject_id (no cambian en edición).
+     */
+    public function updatePatient(array $data, Patient $patient): void
+    {
+        DB::transaction(function () use ($data, $patient) {
+
+            $mode = $patient->mode;
+
+            if ($mode === 'basic') {
+                $data['frase_inicial'] = $data['frase_inicial']
+                    ?? $patient->initial_message;
+                $data['attendee_type'] = $data['attendee_type'] ?? 'patient';
+            }
+
+            // 1. Tabla principal
+            $patient->update([
+                'case_title' => $data['case_title'],
+                'patient_description' => $data['patient_description'] ?? null,
+                'subject_id' => $data['subject_id'],
+                'learning_objectives' => $data['learning_objectives'] ?? null,
+                'puede_inventar_datos_medicos' => $data['puede_inventar_datos_medicos'] ?? false,
+                'initial_message' => $data['frase_inicial'],
+            ]);
+
+            // 2-5. Tablas relacionadas — reutiliza los mismos builders que createPatient
+            $patient->identity()->update($this->buildIdentityData($data));
+            $patient->psychology()->update($this->buildPsychologyData($data, $mode));
+            $patient->knowledgeBase()->update($this->buildKnowledgeBaseData($data, $mode));
+            $patient->conversationLogic()->update($this->buildConversationLogicData($data, $mode));
+
+            // 6. Ejemplos de coherencia: eliminar y recrear
+            $patient->coherenceExamples()->delete();
+            $this->createCoherenceExample($patient, $data);
+
+            // 7. Regenerar prompt
+            $patient->load(['identity', 'psychology', 'knowledgeBase', 'conversationLogic', 'coherenceExamples']);
+            $promptContent = $this->promptGenerator->generate($patient);
+            $patient->prompt()->updateOrCreate(
+                [],
+                [
+                    'subtitulo' => $data['case_title'],
+                    'prompt_content' => $promptContent,
+                    'generated_at' => now(),
+                    'is_manually_edited' => false,
+                ]
+            );
+        });
+    }
 
     /**
-     * Crea la identidad y rol del paciente.
+     * Extrae los datos del paciente en formato de campos de formulario.
+     * Se usa para pre-rellenar el formulario de edición via session()->flashInput().
      *
-     * Genera los textos descriptivos a partir de los campos del formulario.
-     * Si es acompañante, el rol_principal refleja que habla un familiar
-     * en nombre del paciente.
+     * Nota: algunos campos transformados (patient_name, patient_age, patient_gender)
+     * se recuperan parseando el campo datos_demograficos generado al crear.
      */
-    private function createRoleIdentity(Patient $patient, array $data): PatientRoleIdentity
+    public function extractFormData(Patient $patient): array
+    {
+        $identity = $patient->identity;
+        $psychology = $patient->psychology;
+        $kb = $patient->knowledgeBase;
+        $logic = $patient->conversationLogic;
+        $coherence = $patient->coherenceExamples->first();
+        $comm = $psychology?->caracteristicas_comunicacion ?? [];
+
+        $antecedentes = $kb?->antecedentes_medicos ?? [];
+
+        $data = [
+            // Tabla patients
+            'case_title' => $patient->case_title,
+            'patient_description' => $patient->patient_description,
+            'learning_objectives' => $patient->learning_objectives,
+            'mode' => $patient->mode,
+            'subject_id' => $patient->subject_id,
+            'puede_inventar_datos_medicos' => $patient->puede_inventar_datos_medicos ? '1' : '0',
+            'frase_inicial' => $patient->initial_message,
+
+            // Identidad
+            'attendee_type' => $identity?->es_acompanante ? 'companion' : 'patient',
+            'companion_name' => $identity?->nombre_acompanante,
+            'companion_relation' => $identity?->relacion_con_paciente,
+            'companion_age' => $identity?->edad_acompanante,
+            'companion_gender' => $identity?->genero_acompanante,
+            'patient_name' => $identity?->patient_name,
+            'patient_age' => $identity?->patient_age,
+            'patient_gender' => $identity?->patient_gender,
+            'occupation' => $identity?->occupation,
+            'personal_context' => $identity?->personal_context,
+            'education_level' => $identity?->education_level,
+
+            // Psicología
+            'personality_type' => $comm['personalidad'] ?? null,
+            'verbosity_level' => $comm['nivel_verbosidad'] ?? 3,
+            'medical_knowledge' => $comm['nivel_conocimiento'] ?? 2,
+            'hidden_concerns' => $psychology?->preocupaciones_ocultas,
+            'conflicto_interno' => $psychology?->conflicto_interno,
+            'personality_custom' => $psychology?->estado_emocional_frase,
+            'verbosity_custom' => $comm['descripcion_verbosidad'] ?? null,
+            'knowledge_custom' => $comm['descripcion_conocimiento'] ?? null,
+
+            // Conocimiento
+            'real_diagnosis' => $kb?->diagnostico_real,
+            'key_findings' => $kb?->hallazgos_clave,
+            'motivo_consulta' => $kb?->motivo_consulta,
+            'medical_history' => $antecedentes['texto_libre'] ?? null,
+            'family_history' => $kb?->historia_familiar['texto'] ?? null,
+            'symptoms' => $this->reverseSymptoms($kb?->sintomas_asociados ?? []),
+            'medications' => $this->reverseMedications($kb?->medicacion_tomada ?? []),
+            'vices' => $this->reverseVices($kb?->vicios ?? []),
+
+            // Conversación
+            'special_instructions' => $logic?->instrucciones_especiales,
+            'frases_limite' => $logic?->frases_limite ?? [],
+
+            // Ejemplo de coherencia
+            'ejemplo_coherencia' => $coherence ? [
+                'pregunta' => $coherence->question,
+                'coherente' => $coherence->correct_answer,
+                'incoherente' => $coherence->incorrect_answer,
+            ] : null,
+        ];
+
+        // Eliminar nulos para no sobreescribir old() con vacíos
+        return array_filter($data, fn($v) => $v !== null);
+    }
+
+    /* =================================================================
+     * BUILDERS — Construyen los arrays de atributos para cada tabla.
+     * Usados tanto en create como en update.
+     * ================================================================= */
+
+    private function buildIdentityData(array $data): array
     {
         $name = $data['patient_name'];
         $age = $data['patient_age'];
@@ -122,7 +230,6 @@ class PatientService
             default => 'persona',
         };
 
-        // --- Rol principal ---
         if ($isCompanion) {
             $companionName = $data['companion_name'];
             $relation = $this->formatRelation($data['companion_relation'] ?? 'otro');
@@ -134,13 +241,11 @@ class PatientService
                 . "que acude a una consulta médica.";
         }
 
-        // --- Datos demográficos ---
         $datosDemograficos = "{$name}, {$age} años, {$genderText}.";
         if (!empty($data['education_level'])) {
             $datosDemograficos .= " Nivel educativo: " . $this->formatEducationLevel($data['education_level']) . ".";
         }
 
-        // --- Contexto sociolaboral ---
         $contexto = '';
         if (!empty($data['occupation'])) {
             $contexto = $data['occupation'];
@@ -149,59 +254,42 @@ class PatientService
             $contexto .= ($contexto ? '. ' : '') . $data['personal_context'];
         }
 
-        // --- Nivel de conocimiento médico ---
-        $nivelConocimiento = $this->formatMedicalKnowledge($data['medical_knowledge'] ?? 2);
+        return [
+            // Al final del array, junto al resto de campos:
+            'patient_name' => $data['patient_name'],
+            'patient_age' => $data['patient_age'],
+            'patient_gender' => $data['patient_gender'],
+            'occupation' => $data['occupation'] ?? null,
+            'personal_context' => $data['personal_context'] ?? null,
+            'education_level' => $data['education_level'] ?? null,
 
-        return PatientRoleIdentity::create([
-            'patient_id' => $patient->id,
-            // Campos de acompañante
             'es_acompanante' => $isCompanion,
             'nombre_acompanante' => $isCompanion ? ($data['companion_name'] ?? null) : null,
             'relacion_con_paciente' => $isCompanion ? ($data['companion_relation'] ?? null) : null,
             'edad_acompanante' => $isCompanion ? ($data['companion_age'] ?? null) : null,
             'genero_acompanante' => $isCompanion ? ($data['companion_gender'] ?? null) : null,
-            // Campos de identidad
             'rol_principal' => $rolPrincipal,
             'datos_demograficos' => $datosDemograficos,
             'contexto_sociolaboral' => $contexto ?: 'Sin contexto adicional.',
-            'nivel_conocimiento' => $nivelConocimiento,
+            'nivel_conocimiento' => $this->formatMedicalKnowledge($data['medical_knowledge'] ?? 2),
             'campos_custom' => null,
-        ]);
+        ];
     }
 
-    /* =================================================================
-     * TABLA: patient_psychology
-     * ================================================================= */
-
-    /**
-     * Crea el perfil psicológico y estilo de comunicación.
-     *
-     * Traduce el tipo de personalidad y los sliders a textos para la IA.
-     * Si el usuario personalizó el texto (personality_custom), se usa ese.
-     * En avanzado se permite emotional_context y reglas de interacción.
-     */
-    private function createPsychology(Patient $patient, array $data, string $mode): PatientPsychology
+    private function buildPsychologyData(array $data, string $mode): array
     {
         $personality = $data['personality_type'] ?? 'colaborador';
         $verbosity = (int) ($data['verbosity_level'] ?? 3);
-
         $emotionalDefaults = $this->getEmotionalDefaults($personality);
 
-        // Frase emocional: custom del usuario o generada
         $estadoFrase = !empty($data['personality_custom'])
             ? $data['personality_custom']
             : $emotionalDefaults['frase'];
 
-        // Contexto emocional: solo viene en avanzado
         $estadoContexto = $data['emotional_context'] ?? $emotionalDefaults['contexto'];
+        $conflictoInterno = ($mode === 'advanced') ? ($data['conflicto_interno'] ?? null) : null;
+        $comunicacion = $this->buildCommunicationTraits($personality, $verbosity, $data);
 
-        // Conflicto interno: solo avanzado
-        $conflictoInterno = ($mode === 'advanced') ? ($data['conflicto_interno'] ?? null) : null; // NUEVO
-
-        // Características de comunicación con soporte de customización
-        $comunicacion = $this->buildCommunicationTraits($personality, $verbosity, $data); // MODIFICADO
-
-        // Reglas de interacción: solo avanzado
         $reglasInteraccion = null;
         if ($mode === 'advanced' && !empty($data['rules'])) {
             $reglasInteraccion = array_map(fn($rule) => [
@@ -210,85 +298,51 @@ class PatientService
             ], $data['rules']);
         }
 
-        return PatientPsychology::create([
-            'patient_id' => $patient->id,
+        return [
             'estado_emocional_frase' => $estadoFrase,
             'estado_emocional_contexto' => $estadoContexto,
-            'conflicto_interno' => $conflictoInterno, // NUEVO
+            'conflicto_interno' => $conflictoInterno,
             'caracteristicas_comunicacion' => $comunicacion,
             'reglas_interaccion' => $reglasInteraccion,
             'preocupaciones_ocultas' => $data['hidden_concerns'] ?? null,
-        ]);
+        ];
     }
-    /* =================================================================
-     * TABLA: patient_knowledge_base
-     * ================================================================= */
 
-    /**
-     * Crea la base de conocimiento médico y narrativo del caso.
-     *
-     * En Modo Básico:
-     *   - medical_history y current_medications son textareas simples
-     *   - Se convierten a arrays JSON con formato unificado
-     *   - La historia_narrativa se genera automáticamente
-     *
-     * En Modo Avanzado:
-     *   - Listas estructuradas (diseases, surgeries, medications, vices)
-     *   - Cada item con su regla de revelación
-     */
-    private function createKnowledgeBase(Patient $patient, array $data, string $mode): PatientKnowledgeBase
+    private function buildKnowledgeBaseData(array $data, string $mode): array
     {
         $isAdvanced = $mode === 'advanced';
 
-        // --- Antecedentes médicos ---
-        if ($isAdvanced) {
-            $antecedentes = [
+        $antecedentes = $isAdvanced
+            ? [
                 'enfermedades' => $this->formatDynamicListWithReveal($data['diseases'] ?? []),
                 'cirugias' => $this->formatDynamicListWithReveal($data['surgeries'] ?? []),
                 'alergias' => $data['allergies'] ?? null,
-            ];
-        } else {
-            $antecedentes = [
-                'texto_libre' => $data['medical_history'] ?? null,
-            ];
-        }
+            ]
+            : ['texto_libre' => $data['medical_history'] ?? null];
 
-        // --- Medicación ---
-        if ($isAdvanced) {
-            $medicacion = $this->formatMedications($data['medications'] ?? []);
-        } else {
-            // BÁSICO: lista dinámica simple con nombre + frecuencia
-            $medicacion = $this->formatBasicMedications($data['medications'] ?? []); // NUEVO
-        }
+        $medicacion = $isAdvanced
+            ? $this->formatMedications($data['medications'] ?? [])
+            : $this->formatBasicMedications($data['medications'] ?? []);
 
-        // --- Síntomas ---
         $sintomas = $this->formatSymptoms($data['symptoms'] ?? [], $isAdvanced);
 
-        // --- Vicios (AMBOS modos ahora) --- // MODIFICADO
-        $vicios = [];
-        if (!empty($data['vices'])) {
-            $vicios = $this->formatDynamicListWithReveal($data['vices'] ?? [], 'frequency');
-        }
+        $vicios = !empty($data['vices'])
+            ? $this->formatDynamicListWithReveal($data['vices'] ?? [], 'frequency')
+            : [];
 
-        // --- Historia narrativa ---
         $historiaNarrativa = $data['historia_narrativa'] ?? $this->buildNarrative($data, $mode);
 
-        // --- Historia familiar (AMBOS modos ahora) --- // MODIFICADO
-        $historiaFamiliar = [];
-        if (!empty($data['family_history'])) {
-            $historiaFamiliar = ['texto' => $data['family_history']];
-        }
+        $historiaFamiliar = !empty($data['family_history'])
+            ? ['texto' => $data['family_history']]
+            : [];
 
-        // --- Entorno familiar (AMBOS modos ahora) --- // MODIFICADO
-        $entornoFamiliar = [];
-        if (!empty($data['personal_context'])) {
-            $entornoFamiliar = ['texto' => $data['personal_context']];
-        }
+        $entornoFamiliar = !empty($data['personal_context'])
+            ? ['texto' => $data['personal_context']]
+            : [];
 
-        return PatientKnowledgeBase::create([
-            'patient_id' => $patient->id,
+        return [
             'frase_inicial' => $data['frase_inicial'],
-            'motivo_consulta' => $data['motivo_consulta'] ?? null, // NUEVO
+            'motivo_consulta' => $data['motivo_consulta'] ?? null,
             'historia_narrativa' => $historiaNarrativa,
             'diagnostico_real' => $data['real_diagnosis'],
             'hallazgos_clave' => $data['key_findings'] ?? null,
@@ -299,45 +353,14 @@ class PatientService
             'entorno_familiar' => $entornoFamiliar,
             'hobbies' => [],
             'vicios' => $vicios,
-        ]);
+        ];
     }
 
-    /**
-     * Formatea medicación del modo básico.
-     * Solo recoge nombre y cuándo se toma (frecuencia libre).
-     */
-    private function formatBasicMedications(array $medications): array
-    {
-        $formatted = [];
-        foreach ($medications as $med) {
-            if (empty($med['name']))
-                continue;
-            $formatted[] = [
-                'nombre' => $med['name'],
-                'frecuencia' => $med['frequency'] ?? null,
-            ];
-        }
-        return $formatted;
-    }
-
-    /* =================================================================
-     * TABLA: patient_conversation_logic
-     * ================================================================= */
-
-    /**
-     * Crea la lógica de conversación (revelación, gatillos, contradicciones).
-     *
-     * En AMBOS modos se genera revelacion_sintomas desde los síntomas.
-     * En Avanzado se añaden gatillos, contradicciones y eventos de cierre.
-     */
-    private function createConversationLogic(Patient $patient, array $data, string $mode): PatientConversationLogic
+    private function buildConversationLogicData(array $data, string $mode): array
     {
         $isAdvanced = $mode === 'advanced';
-
-        // --- Revelación de síntomas (ambos modos) ---
         $revelacionSintomas = $this->buildSymptomRevealRules($data['symptoms'] ?? []);
 
-        // --- Gatillos emocionales (solo avanzado) ---
         $gatillos = null;
         if ($isAdvanced && !empty($data['triggers'])) {
             $gatillos = array_map(fn($t) => [
@@ -346,7 +369,6 @@ class PatientService
             ], $data['triggers']);
         }
 
-        // --- Contradicciones (solo avanzado) ---
         $contradicciones = null;
         if ($isAdvanced && !empty($data['contradictions'])) {
             $contradicciones = array_map(fn($c) => [
@@ -356,7 +378,6 @@ class PatientService
             ], $data['contradictions']);
         }
 
-        // --- Eventos de cierre ---
         $eventosCierre = ['despedida_natural' => 'El paciente se despide cuando siente que la consulta ha terminado.'];
         if ($isAdvanced && !empty($data['closures'])) {
             $eventosCierre = array_map(fn($c) => [
@@ -365,7 +386,6 @@ class PatientService
             ], $data['closures']);
         }
 
-        // --- Frases de límite (NUEVO - ambos modos) ---
         $frasesLimite = null;
         if (!empty($data['frases_limite'])) {
             $frasesLimite = array_values(
@@ -373,27 +393,66 @@ class PatientService
             );
         }
 
-        // --- Ejemplo de coherencia (NUEVO - ambos modos) ---
-        $ejemploCoherencia = null;
-        $ec = $data['ejemplo_coherencia'] ?? [];
-        if (!empty($ec['pregunta']) && !empty($ec['coherente']) && !empty($ec['incoherente'])) {
-            $ejemploCoherencia = [
-                'pregunta' => $ec['pregunta'],
-                'coherente' => $ec['coherente'],
-                'incoherente' => $ec['incoherente'],
-            ];
-        }
-
-        return PatientConversationLogic::create([
-            'patient_id' => $patient->id,
+        return [
             'revelacion_sintomas' => $revelacionSintomas,
             'gatillos_emocionales' => $gatillos,
             'contradicciones' => $contradicciones,
             'interacciones_trigger' => null,
             'eventos_cierre' => $eventosCierre,
             'instrucciones_especiales' => $data['special_instructions'] ?? null,
-            'frases_limite' => $frasesLimite,           // NUEVO
-            'ejemplo_coherencia' => $ejemploCoherencia,      // NUEVO
+            'frases_limite' => $frasesLimite,
+        ];
+    }
+
+    /* =================================================================
+     * PERSISTENCIA — Llaman a los builders y guardan en BD.
+     * ================================================================= */
+
+    private function createRoleIdentity(Patient $patient, array $data): PatientRoleIdentity
+    {
+        return PatientRoleIdentity::create([
+            'patient_id' => $patient->id,
+            ...$this->buildIdentityData($data),
+        ]);
+    }
+
+    private function createPsychology(Patient $patient, array $data, string $mode): PatientPsychology
+    {
+        return PatientPsychology::create([
+            'patient_id' => $patient->id,
+            ...$this->buildPsychologyData($data, $mode),
+        ]);
+    }
+
+    private function createKnowledgeBase(Patient $patient, array $data, string $mode): PatientKnowledgeBase
+    {
+        return PatientKnowledgeBase::create([
+            'patient_id' => $patient->id,
+            ...$this->buildKnowledgeBaseData($data, $mode),
+        ]);
+    }
+
+    private function createConversationLogic(Patient $patient, array $data, string $mode): PatientConversationLogic
+    {
+        return PatientConversationLogic::create([
+            'patient_id' => $patient->id,
+            ...$this->buildConversationLogicData($data, $mode),
+        ]);
+    }
+
+    private function createCoherenceExample(Patient $patient, array $data): void
+    {
+        $ec = $data['ejemplo_coherencia'] ?? [];
+        if (empty($ec['pregunta']) || empty($ec['coherente']) || empty($ec['incoherente'])) {
+            return;
+        }
+
+        \App\Models\CoherenceExample::create([
+            'patient_id' => $patient->id,
+            'question' => $ec['pregunta'],
+            'correct_answer' => $ec['coherente'],
+            'incorrect_answer' => $ec['incoherente'],
+            'example_order' => 1,
         ]);
     }
 
@@ -401,15 +460,9 @@ class PatientService
      * GENERACIÓN DEL PROMPT
      * ================================================================= */
 
-    /**
-     * Genera el prompt Markdown y lo guarda en patient_prompts.
-     *
-     * Recarga las relaciones del paciente para que el PromptGeneratorService
-     * lea directamente de las tablas (no de $data).
-     */
     private function generateAndStorePrompt(Patient $patient, array $data): PatientPrompt
     {
-        $patient->load(['identity', 'psychology', 'knowledgeBase', 'conversationLogic']);
+        $patient->load(['identity', 'psychology', 'knowledgeBase', 'conversationLogic', 'coherenceExamples']);
 
         $promptContent = $this->promptGenerator->generate($patient);
 
@@ -424,15 +477,54 @@ class PatientService
     }
 
     /* =================================================================
-     * MÉTODOS AUXILIARES: FORMATEO DE ARRAYS DINÁMICOS
+     * HELPERS: REVERSIÓN (extractFormData)
      * ================================================================= */
 
     /**
-     * Formatea síntomas del formulario al formato JSON de BD.
-     *
-     * Básico: {name, reveal, lie_text}
-     * Avanzado: + {intensity, aggravating, relieving}
+     * Convierte el array JSON de síntomas de vuelta a formato de formulario.
      */
+    private function reverseSymptoms(array $symptoms): array
+    {
+        return array_map(fn($s) => [
+            'name' => $s['nombre'] ?? '',
+            'reveal' => $s['revelacion'] ?? 'espontaneo',
+            'lie_text' => $s['mentira'] ?? '',
+            'intensity' => $s['intensidad'] ?? '',
+            'aggravating' => $s['agravantes'] ?? '',
+            'relieving' => $s['atenuantes'] ?? '',
+        ], $symptoms);
+    }
+
+    /**
+     * Convierte el array JSON de medicación de vuelta a formato de formulario.
+     */
+    private function reverseMedications(array $meds): array
+    {
+        return array_map(fn($m) => [
+            'name' => $m['nombre'] ?? '',
+            'frequency' => $m['frecuencia'] ?? '',
+            'dose' => $m['dosis'] ?? '',
+            'adherence' => $m['adherencia'] ?? false,
+            'adherence_detail' => $m['detalle_adherencia'] ?? '',
+            'reveal' => $m['revelacion'] ?? 'espontaneo',
+            'lie_text' => $m['mentira'] ?? '',
+        ], $meds);
+    }
+
+
+    private function reverseVices(array $vicios): array
+    {
+        return array_map(fn($v) => [
+            'name' => $v['nombre'] ?? '',
+            'reveal' => $v['revelacion'] ?? 'espontaneo',
+            'lie_text' => $v['mentira'] ?? '',
+        ], $vicios);
+    }
+
+    /* =================================================================
+     * HELPERS: FORMATEO DE ARRAYS DINÁMICOS
+     * ================================================================= */
+
     private function formatSymptoms(array $symptoms, bool $isAdvanced): array
     {
         $formatted = [];
@@ -449,10 +541,6 @@ class PatientService
                 $item['mentira'] = $s['lie_text'] ?? null;
             }
 
-            // NUEVO: exagera no necesita campo extra,
-            // la IA improvisa la exageración siendo coherente con el personaje
-            // El valor 'exagera' queda registrado en revelacion y el prompt lo usará
-
             if ($isAdvanced) {
                 $item['intensidad'] = $s['intensity'] ?? null;
                 $item['agravantes'] = $s['aggravating'] ?? null;
@@ -464,13 +552,6 @@ class PatientService
         return $formatted;
     }
 
-    /**
-     * Formatea una lista dinámica genérica con revelación unificada.
-     * Sirve para: diseases, surgeries, vices.
-     *
-     * @param array  $items      Los items del formulario
-     * @param string $extraField Campo extra además de 'name' (ej: 'since', 'frequency')
-     */
     private function formatDynamicListWithReveal(array $items, string $extraField = 'since'): array
     {
         $formatted = [];
@@ -496,10 +577,6 @@ class PatientService
         return $formatted;
     }
 
-    /**
-     * Formatea medicación estructurada (solo avanzado).
-     * Incluye: nombre, dosis, frecuencia, adherencia, revelación.
-     */
     private function formatMedications(array $medications): array
     {
         $formatted = [];
@@ -511,11 +588,11 @@ class PatientService
                 'nombre' => $med['name'],
                 'dosis' => $med['dose'] ?? null,
                 'frecuencia' => $med['frequency'] ?? null,
-                'adherencia' => !empty($med['adherence']),
+                'adherencia' => ($med['adherence'] ?? '') === 'total',
                 'revelacion' => $med['reveal'] ?? 'espontaneo',
             ];
 
-            if (empty($med['adherence']) && !empty($med['adherence_detail'])) {
+            if (!empty($med['adherence_detail'])) {
                 $entry['detalle_adherencia'] = $med['adherence_detail'];
             }
 
@@ -528,10 +605,20 @@ class PatientService
         return $formatted;
     }
 
-    /**
-     * Construye las reglas de revelación de síntomas para conversation_logic.
-     * Incluye el campo de mentira cuando reveal='miente'.
-     */
+    private function formatBasicMedications(array $medications): array
+    {
+        $formatted = [];
+        foreach ($medications as $med) {
+            if (empty($med['name']))
+                continue;
+            $formatted[] = [
+                'nombre' => $med['name'],
+                'frecuencia' => $med['frequency'] ?? null,
+            ];
+        }
+        return $formatted;
+    }
+
     private function buildSymptomRevealRules(array $symptoms): ?array
     {
         $rules = [];
@@ -554,10 +641,6 @@ class PatientService
         return !empty($rules) ? $rules : null;
     }
 
-    /**
-     * Construye una narrativa básica combinando los datos del formulario.
-     * Se usa cuando no se proporciona 'historia_narrativa' (modo básico).
-     */
     private function buildNarrative(array $data, string $mode): string
     {
         $parts = [];
@@ -574,10 +657,10 @@ class PatientService
         return !empty($parts) ? implode(' ', $parts) : '';
     }
 
-    /**
-     * Devuelve estado emocional por defecto según el tipo de personalidad.
-     * Cubre los 11 tipos del selector.
-     */
+    /* =================================================================
+     * HELPERS: FORMATEO DE VALORES
+     * ================================================================= */
+
     private function getEmotionalDefaults(string $personality): array
     {
         $defaults = [
@@ -630,27 +713,20 @@ class PatientService
         return $defaults[$personality] ?? $defaults['colaborador'];
     }
 
-    /**
-     * Genera las características de comunicación como array para JSON.
-     */
     private function buildCommunicationTraits(string $personality, int $verbosity, array $data = []): array
     {
         return [
             'personalidad' => $personality,
             'nivel_verbosidad' => $verbosity,
-            'descripcion_verbosidad' => !empty($data['verbosity_custom'])  // NUEVO
+            'descripcion_verbosidad' => !empty($data['verbosity_custom'])
                 ? $data['verbosity_custom']
                 : $this->formatVerbosity($verbosity),
             'nivel_conocimiento' => (int) ($data['medical_knowledge'] ?? 2),
-            'descripcion_conocimiento' => !empty($data['knowledge_custom']) // NUEVO
+            'descripcion_conocimiento' => !empty($data['knowledge_custom'])
                 ? $data['knowledge_custom']
                 : $this->formatMedicalKnowledge((int) ($data['medical_knowledge'] ?? 2)),
         ];
     }
-
-    /* =================================================================
-     * MÉTODOS AUXILIARES: FORMATEO DE VALORES
-     * ================================================================= */
 
     private function formatVerbosity(int $level): string
     {
@@ -689,9 +765,6 @@ class PatientService
         return $levels[$level] ?? $level;
     }
 
-    /**
-     * Formatea la relación del acompañante en texto legible.
-     */
     private function formatRelation(string $relation): string
     {
         $relations = [

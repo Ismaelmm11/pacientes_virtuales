@@ -1,0 +1,50 @@
+.sim-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+.sim-modal-overlay.active {
+    display: flex;
+}
+.sim-modal {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-xl);
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+}
+.sim-modal-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-full);
+    background: rgba(91, 231, 196, 0.15);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--spacing-md);
+}
+.sim-modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-sm);
+}
+.sim-modal-body {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.5;
+}
+.sim-modal-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: center;
+}

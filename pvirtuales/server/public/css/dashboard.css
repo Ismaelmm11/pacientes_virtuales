@@ -57,7 +57,7 @@
 .row-actions {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 4px;
 }
 
@@ -99,7 +99,7 @@
  */
 .btn-action-success:hover {
     background: rgba(91, 231, 196, 0.15);
-    color: #2BA88A;
+    color: #2ba88a;
 }
 
 /*
@@ -109,6 +109,14 @@
 .btn-action-danger:hover {
     background: rgba(231, 76, 60, 0.12);
     color: var(--color-danger);
+}
+
+.btn-action-edit {
+    color: var(--color-text-muted);
+}
+.btn-action-edit:hover {
+    color: var(--color-primary);
+    background: var(--color-primary-subtle);
 }
 
 /* ==========================================================================
@@ -122,3 +130,490 @@
 .topbar-title {
     line-height: 1.3;
 }
+
+/* ==========================================================================
+   17. TEST — Gestión y lista de preguntas
+   ========================================================================== */
+
+.cp-question-type-selector {
+    display: flex;
+    gap: 12px;
+}
+
+.cp-question-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.cp-question-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+    transition: background 0.15s;
+}
+
+.cp-question-item:last-child {
+    border-bottom: none;
+}
+
+.cp-question-item:hover {
+    background: var(--color-surface-alt);
+}
+
+.cp-question-item-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    flex: 1;
+    min-width: 0;
+}
+
+.cp-question-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    color: white;
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cp-question-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.cp-question-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-text);
+    line-height: 1.4;
+    margin-bottom: 6px;
+}
+
+.cp-question-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.cp-question-item-right {
+    flex-shrink: 0;
+    display: flex;
+}
+
+.cp-question-fields {
+    display: none;
+    margin-bottom: 20px;
+}
+
+.cp-question-fields.visible {
+    display: block;
+    animation: slideDown 0.2s ease;
+}
+
+.cp-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.cp-option-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cp-option-letter {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--color-surface-alt);
+    border: 1.5px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cp-option-item input[type="text"] {
+    flex: 1;
+    padding: 9px 13px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.88rem;
+    font-family: inherit;
+    background: var(--color-surface);
+    color: var(--color-text);
+    transition: border-color 0.2s;
+}
+
+.cp-option-item input[type="text"]:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(91, 231, 196, 0.18);
+}
+
+.cp-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.cp-empty-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    color: var(--color-text-muted);
+}
+
+.cp-empty-icon i {
+    width: 24px;
+    height: 24px;
+}
+
+.cp-empty-title {
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 4px;
+}
+
+.cp-empty-desc {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.cp-random-config {
+    display: none;
+    background: var(--color-surface-alt);
+    border: 1.5px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.cp-random-config.visible {
+    display: block;
+    animation: slideDown 0.25s ease;
+}
+
+.cp-field-hint {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    margin-top: 6px;
+    line-height: 1.5;
+}
+
+.cp-alert-info {
+    display: flex;
+    gap: 12px;
+    background: rgba(8, 145, 178, 0.06);
+    border: 1.5px solid rgba(8, 145, 178, 0.25);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+}
+
+.cp-alert-info-icon {
+    color: #0891b2;
+    flex-shrink: 0;
+}
+
+.cp-alert-info-icon i {
+    width: 18px;
+    height: 18px;
+}
+
+.cp-alert-info-text {
+    font-size: 0.85rem;
+    color: #0c4a6e;
+    line-height: 1.5;
+}
+
+
+
+/* ==========================================================================
+   18. TEST-TAKE — Vista del alumno (una pregunta a la vez)
+   ========================================================================== */
+
+.tt-progress-wrap {
+    width: 100%;
+    height: 4px;
+    background: var(--color-border);
+    border-radius: var(--radius-full);
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+
+.tt-progress-fill {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-full);
+    transition: width 0.35s ease;
+    width: 0%;
+}
+
+.tt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.tt-header-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tt-subject {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tt-question-count {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tt-pct-badge {
+    font-size: 0.75rem;
+}
+
+.tt-nav-arrows {
+    display: flex;
+    gap: 8px;
+}
+
+.tt-nav-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-fast);
+}
+
+.tt-nav-btn i {
+    width: 18px;
+    height: 18px;
+}
+
+.tt-nav-btn:hover:not(:disabled) {
+    background: rgba(91, 231, 196, 0.1);
+    border-color: var(--color-primary);
+    color: #2BA88A;
+}
+
+.tt-nav-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.tt-slide {
+    display: none;
+}
+
+.tt-slide--active {
+    display: block;
+    animation: ttFadeIn 0.18s ease;
+}
+
+@keyframes ttFadeIn {
+    from { opacity: 0; transform: translateX(10px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.tt-question-card {
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    border-left: 4px solid var(--color-primary);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+}
+
+.tt-question-badges {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.tt-question-text {
+    font-size: 0.97rem;
+    font-weight: 500;
+    color: var(--color-text);
+    line-height: 1.65;
+}
+
+.tt-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.tt-options--tf {
+    flex-direction: row;
+}
+
+.tt-option {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    width: 100%;
+}
+
+.tt-option:hover {
+    border-color: var(--color-primary);
+    background: var(--color-surface-alt);
+}
+
+.tt-option--selected {
+    border-color: var(--color-primary);
+    background: rgba(91, 231, 196, 0.07);
+}
+
+.tt-option--selected .tt-option-letter {
+    background: var(--gradient-primary);
+    color: white;
+    border-color: transparent;
+}
+
+.tt-option-input {
+    display: none;
+}
+
+.tt-option-letter {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-surface-alt);
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: var(--transition-fast);
+}
+
+.tt-option-text {
+    flex: 1;
+    font-size: 0.92rem;
+    color: var(--color-text);
+    line-height: 1.45;
+}
+
+.tt-option-check {
+    display: none;
+    color: #2BA88A;
+    flex-shrink: 0;
+}
+
+.tt-option-check i {
+    width: 18px;
+    height: 18px;
+}
+
+.tt-option--selected .tt-option-check {
+    display: flex;
+}
+
+.tt-open-answer {
+    margin-bottom: 8px;
+}
+
+.tt-textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: var(--color-surface);
+    color: var(--color-text);
+    resize: vertical;
+    min-height: 130px;
+    transition: border-color 0.2s;
+}
+
+.tt-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(91, 231, 196, 0.15);
+}
+
+.tt-footer {
+    display: none;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-bottom: 32px;
+}
+
+.tt-footer--visible {
+    display: flex;
+}
+
+.tt-submit-btn {
+    gap: 8px;
+}
+
+/* Error en pregunta sin responder */
+.tt-question-card--error {
+    border-left-color: var(--color-danger);
+    border-color: rgba(231, 76, 60, 0.35);
+}
+
+.tt-question-card--error::after {
+    content: 'Debes responder esta pregunta para poder enviar.';
+    display: block;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(231, 76, 60, 0.2);
+    font-size: 0.82rem;
+    color: var(--color-danger);
+    font-weight: 500;
+}
+

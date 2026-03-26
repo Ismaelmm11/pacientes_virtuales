@@ -207,7 +207,7 @@
                                         @endif
 
                                         {{-- Eliminar --}}
-                                        <form action="{{ route('teacher.patients.destroy', $patient) }}"
+                                        <form action="{{ route('teacher.patients.destroy', [$patient, 'index']) }}"
                                               method="POST"
                                               style="display:inline;"
                                               onsubmit="return confirm('¿Eliminar {{ addslashes($patient->case_title) }}? Esta acción no se puede deshacer.')">
@@ -309,4 +309,4 @@
         </script>
     </x-slot>
 
-</x-app-layout>
+</x-layouts.app>

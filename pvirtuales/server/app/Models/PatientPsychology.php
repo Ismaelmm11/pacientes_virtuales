@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -17,10 +16,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property array $caracteristicas_comunicacion Rasgos de comunicación (JSON).
  * @property array|null $reglas_interaccion Reglas condicionales "Si X → Entonces Y" (JSON).
  * @property string|null $preocupaciones_ocultas Miedos que no expresa directamente.
+ * @property string|null $conflicto_interno Tensión interna del paciente, por ejemplo querer negar que fuma.
  */
 class PatientPsychology extends Model
 {
-    use HasFactory;
 
     const UPDATED_AT = null;
 
@@ -33,6 +32,7 @@ class PatientPsychology extends Model
         'caracteristicas_comunicacion',
         'reglas_interaccion',
         'preocupaciones_ocultas',
+        'conflicto_interno'
     ];
 
     protected $casts = [

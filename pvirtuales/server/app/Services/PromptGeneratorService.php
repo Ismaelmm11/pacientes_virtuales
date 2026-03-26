@@ -56,10 +56,10 @@ class PromptGeneratorService
      */
     public function generate(Patient $patient): string
     {
-        $identity  = $patient->identity;
+        $identity = $patient->identity;
         $psychology = $patient->psychology;
-        $knowledge  = $patient->knowledgeBase;
-        $logic      = $patient->conversationLogic;
+        $knowledge = $patient->knowledgeBase;
+        $logic = $patient->conversationLogic;
 
         $sections = [];
 
@@ -110,7 +110,12 @@ class PromptGeneratorService
         $lines[] = "";
 
         // Ejemplo de coherencia: dinámico si existe, genérico si no
-        $ejemploCoherencia = $logic->ejemplo_coherencia;
+        $primerEjemplo = $patient->coherenceExamples->first();
+        $ejemploCoherencia = $primerEjemplo ? [
+            'pregunta' => $primerEjemplo->question,
+            'coherente' => $primerEjemplo->correct_answer,
+            'incoherente' => $primerEjemplo->incorrect_answer,
+        ] : null;
         if (is_array($ejemploCoherencia) && !empty($ejemploCoherencia['pregunta'])) {
             $ec = $ejemploCoherencia;
             $lines[] = "- **Ejemplo de cómo improvisar correctamente:**";
@@ -281,15 +286,16 @@ class PromptGeneratorService
         $lines[] = "";
 
         // --- Frase inicial ---
-        $lines[] = "**Tu frase de apertura — dila TEXTUALMENTE al comenzar la consulta:**";
+        $lines[] = "**Tu frase de apertura (ya ha sido dicha automáticamente al inicio de la consulta — NO la repitas):**";
         $lines[] = "";
         $lines[] = "> {$knowledge->frase_inicial}";
         $lines[] = "";
+        $lines[] = "Esta fue tu primera intervención. Tenla en cuenta como contexto para mantener coherencia, pero no la vuelvas a decir.";
 
         // --- Motivo de consulta ---
         // Se presenta como respuesta situacional, no como dato clínico
         if (!empty($knowledge->motivo_consulta)) {
-            $lines[] = "**Motivo principal de consulta** *(tu respuesta cuando el médico pregunta \"¿qué le trae por aquí?\" o \"¿qué le pasa?\")*:";
+            $lines[] = "\nEsta es la **información completa**s del caso para tu coherencia interna. Cuando el médico pregunte, responde de forma natural y solo con los síntomas marcados como espontáneos";
             $lines[] = "";
             $lines[] = "> {$knowledge->motivo_consulta}";
             $lines[] = "";
@@ -366,8 +372,8 @@ class PromptGeneratorService
                 foreach ($medicacion as $m) {
                     $m = (array) $m;
                     $nombre = $m['nombre'] ?? '?';
-                    $freq   = !empty($m['frecuencia']) ? " — {$m['frecuencia']}" : '';
-                    $dosis  = !empty($m['dosis']) ? " {$m['dosis']}" : '';
+                    $freq = !empty($m['frecuencia']) ? " — {$m['frecuencia']}" : '';
+                    $dosis = !empty($m['dosis']) ? " {$m['dosis']}" : '';
 
                     $linea = "- **{$nombre}**{$dosis}{$freq}";
 
@@ -398,7 +404,7 @@ class PromptGeneratorService
             foreach ($vicios as $v) {
                 $v = (array) $v;
                 $nombre = $v['nombre'] ?? '?';
-                $freq   = !empty($v['frequency']) ? " ({$v['frequency']})" : '';
+                $freq = !empty($v['frequency']) ? " ({$v['frequency']})" : '';
                 $lines[] = "- **{$nombre}**{$freq} → " . $this->formatRevealRule($v);
             }
             $lines[] = "";
@@ -458,22 +464,23 @@ class PromptGeneratorService
         // Clasificar por tipo de revelación
         $espontaneos = [];
         $conPregunta = [];
-        $exagerados  = [];
-        $ocultos     = [];
-        $mentiras    = [];
+        $exagerados = [];
+        $ocultos = [];
+        $mentiras = [];
 
         foreach ($sintomas as $s) {
             $s = (array) $s;
-            if (empty($s['nombre'])) continue;
+            if (empty($s['nombre']))
+                continue;
             $tipo = $s['revelacion'] ?? 'espontaneo';
 
             match ($tipo) {
                 'espontaneo' => $espontaneos[] = $s,
-                'pregunta'   => $conPregunta[] = $s,
-                'exagera'    => $exagerados[]  = $s,
-                'oculta'     => $ocultos[]     = $s,
-                'miente'     => $mentiras[]    = $s,
-                default      => $espontaneos[] = $s,
+                'pregunta' => $conPregunta[] = $s,
+                'exagera' => $exagerados[] = $s,
+                'oculta' => $ocultos[] = $s,
+                'miente' => $mentiras[] = $s,
+                default => $espontaneos[] = $s,
             };
         }
 
@@ -525,7 +532,7 @@ class PromptGeneratorService
             $lines[] = "**Mientes sobre estos** (cuando el médico pregunte, das la información falsa indicada y mantienes la mentira durante toda la consulta):";
             $lines[] = "";
             foreach ($mentiras as $s) {
-                $s    = (array) $s;
+                $s = (array) $s;
                 $base = $this->formatSymptomLine($s);
                 if (!empty($s['mentira'])) {
                     $lines[] = "- {$base} → En su lugar dices: *\"{$s['mentira']}\"*";
@@ -545,9 +552,12 @@ class PromptGeneratorService
         $nombre = $s['nombre'] ?? '?';
         $extras = [];
 
-        if (!empty($s['intensidad']))  $extras[] = "intensidad {$s['intensidad']}/10";
-        if (!empty($s['agravantes'])) $extras[] = "empeora con: {$s['agravantes']}";
-        if (!empty($s['atenuantes'])) $extras[] = "mejora con: {$s['atenuantes']}";
+        if (!empty($s['intensidad']))
+            $extras[] = "intensidad {$s['intensidad']}/10";
+        if (!empty($s['agravantes']))
+            $extras[] = "empeora con: {$s['agravantes']}";
+        if (!empty($s['atenuantes']))
+            $extras[] = "mejora con: {$s['atenuantes']}";
 
         return !empty($extras)
             ? "**{$nombre}** (" . implode(', ', $extras) . ")"
@@ -585,7 +595,7 @@ class PromptGeneratorService
             foreach ($reglas as $r) {
                 $r = (array) $r;
                 $condicion = $r['condicion'] ?? '?';
-                $reaccion  = $r['reaccion'] ?? '?';
+                $reaccion = $r['reaccion'] ?? '?';
                 $lines[] = "- **Si** el médico {$condicion} **→** {$reaccion}";
             }
             $lines[] = "";
@@ -599,7 +609,7 @@ class PromptGeneratorService
             $lines[] = "";
             foreach ($gatillos as $g) {
                 $g = (array) $g;
-                $tema    = $g['tema'] ?? '?';
+                $tema = $g['tema'] ?? '?';
                 $reaccion = $g['reaccion'] ?? '?';
                 $lines[] = "- **Si mencionan** *\"{$tema}\"* **→** {$reaccion}";
             }
@@ -616,9 +626,9 @@ class PromptGeneratorService
             $lines[] = "";
             foreach ($contradicciones as $c) {
                 $c = (array) $c;
-                $dice      = $c['que_dice'] ?? '?';
+                $dice = $c['que_dice'] ?? '?';
                 $contradice = $c['que_contradice'] ?? '?';
-                $caught    = !empty($c['si_le_pillan'])
+                $caught = !empty($c['si_le_pillan'])
                     ? $c['si_le_pillan']
                     : 'Improvisa una excusa coherente con tu personaje.';
                 $lines[] = "- **Dices:** *\"{$dice}\"* **→ Pero en realidad:** {$contradice}";
@@ -638,7 +648,7 @@ class PromptGeneratorService
                 $lines[] = $cierre['despedida_natural'];
             } else {
                 foreach ($cierre as $ev) {
-                    $ev   = (array) $ev;
+                    $ev = (array) $ev;
                     $cond = $ev['condicion'] ?? '?';
                     $accion = $ev['accion'] ?? '?';
                     $lines[] = "- **{$cond}** → {$accion}";
@@ -657,7 +667,8 @@ class PromptGeneratorService
         }
 
         // Si no hay nada en esta sección, devolver vacío
-        if (!$hasContent) return '';
+        if (!$hasContent)
+            return '';
 
         return implode("\n", $lines);
     }
@@ -676,11 +687,11 @@ class PromptGeneratorService
 
         return match ($reveal) {
             'espontaneo' => 'Lo mencionas espontáneamente cuando sea natural.',
-            'pregunta'   => 'Solo lo mencionas si el médico pregunta directamente.',
-            'exagera'    => 'Lo mencionas exagerando su importancia o gravedad.',
-            'oculta'     => 'NUNCA lo admites aunque te pregunten. Niégalo o esquiva la pregunta.',
-            'miente'     => $this->formatLieRule($item),
-            default      => 'Lo mencionas cuando sea natural.',
+            'pregunta' => 'Solo lo mencionas si el médico pregunta directamente.',
+            'exagera' => 'Lo mencionas exagerando su importancia o gravedad.',
+            'oculta' => 'NUNCA lo admites aunque te pregunten. Niégalo o esquiva la pregunta.',
+            'miente' => $this->formatLieRule($item),
+            default => 'Lo mencionas cuando sea natural.',
         };
     }
 

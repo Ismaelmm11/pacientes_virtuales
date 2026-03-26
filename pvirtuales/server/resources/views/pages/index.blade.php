@@ -12,6 +12,7 @@
 --}}
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,16 +21,18 @@
     {{-- Google Fonts: Syne para títulos (bold, editorial) + DM Sans para cuerpo --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
 
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
     <link href="{{ asset('css/home.css') }}" rel="stylesheet">
 </head>
+
 <body class="home-body">
 
     {{-- ========================================================
-         NAVBAR — Fija, fondo cristal
-         ======================================================== --}}
+    NAVBAR — Fija, fondo cristal
+    ======================================================== --}}
     <nav class="home-nav">
         <div class="home-nav-inner">
 
@@ -45,9 +48,6 @@
             <div class="home-nav-actions">
                 <a href="{{ route('login') }}" class="btn btn-ghost btn-sm">
                     Iniciar Sesión
-                </a>
-                <a href="{{ route('register.start') }}" class="btn btn-primary btn-sm">
-                    Solicitar Acceso
                     <i data-lucide="arrow-right"></i>
                 </a>
             </div>
@@ -55,8 +55,8 @@
     </nav>
 
     {{-- ========================================================
-         HERO — Título grande + subtítulo + CTA
-         ======================================================== --}}
+    HERO — Título grande + subtítulo + CTA
+    ======================================================== --}}
     <section class="home-hero">
 
         {{-- Blobs de fondo --}}
@@ -87,12 +87,9 @@
 
             {{-- CTAs --}}
             <div class="home-hero-ctas">
-                <a href="{{ route('register.start') }}" class="btn btn-primary btn-lg">
-                    Solicitar Acceso
+                <a href="{{ route('login') }}" class="btn btn-primary btn-lg">
+                    Acceder a la plataforma
                     <i data-lucide="arrow-right"></i>
-                </a>
-                <a href="{{ route('login') }}" class="btn btn-ghost btn-lg">
-                    Ya tengo cuenta
                 </a>
             </div>
 
@@ -100,21 +97,21 @@
     </section>
 
     {{-- ========================================================
-         CARDS INCLINADAS — Sección inferior tipo HORMN
-         ======================================================== --}}
+    CARDS INCLINADAS — Sección inferior tipo HORMN
+    ======================================================== --}}
     <section class="home-cards-section">
-        
+
     </section>
 
     {{-- ========================================================
-         FOOTER
-         ======================================================== --}}
+    FOOTER
+    ======================================================== --}}
     <footer class="home-footer">
         <div class="home-footer-inner">
             <span>© {{ date('Y') }} Pacientes Virtuales — Plataforma educativa de simulación clínica</span>
+            {{-- DESPUÉS --}}
             <div class="home-footer-links">
                 <a href="{{ route('login') }}">Acceder</a>
-                <a href="{{ route('register.start') }}">Solicitar Acceso</a>
             </div>
         </div>
     </footer>
@@ -124,4 +121,5 @@
     <script>lucide.createIcons();</script>
 
 </body>
+
 </html>

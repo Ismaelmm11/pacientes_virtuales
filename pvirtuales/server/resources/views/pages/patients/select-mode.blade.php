@@ -14,7 +14,9 @@
     <x-slot name="title">Crear Paciente Virtual</x-slot>
 
     <x-slot name="styles">
-        <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap"
+            rel="stylesheet">
         <link href="{{ asset('css/select-mode.css') }}" rel="stylesheet">
     </x-slot>
 
@@ -25,9 +27,20 @@
                 <div class="topbar-subtitle">Elige el modo de creación</div>
             </div>
             <div class="topbar-right">
-                <a href="{{ route('teacher.patients.index') }}" class="btn btn-ghost btn-sm">
+                {{-- DESPUÉS --}}
+                @php
+                    $backRoute = request('origen') === 'dashboard'
+                        ? route('teacher.dashboard')
+                        : route('teacher.patients.index');
+
+                    $backLabel = request('origen') === 'dashboard'
+                        ? 'Dashboard'
+                        : 'Mis Pacientes';
+                @endphp
+
+                <a href="{{ $backRoute }}" class="btn btn-ghost btn-sm">
                     <i data-lucide="arrow-left"></i>
-                    Volver
+                    {{ $backLabel }}
                 </a>
             </div>
         </div>
@@ -94,4 +107,4 @@
 
     </div>
 
-</x-app-layout>
+</x-layouts.app>

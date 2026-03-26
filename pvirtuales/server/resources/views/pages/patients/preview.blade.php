@@ -2,185 +2,285 @@
 |--------------------------------------------------------------------------
 | Previsualización del Prompt Generado
 |--------------------------------------------------------------------------
-|
-| Muestra el prompt generado para un paciente en vista formateada (Markdown)
-| o en código fuente. Permite copiar el prompt y publicar el paciente.
-|
 --}}
-<x-layouts.app title="Previsualizar - {{ $patient->case_title }}">
-    <x-slot:styles>
-        <link href="{{ asset('css/patients.css') }}" rel="stylesheet">
-    </x-slot:styles>
+<x-layouts.app>
 
-    <x-navbar backRoute="patients.index" backLabel="Volver a Mis Pacientes" rightLabel="Previsualización" />
+    <x-slot name="title">Previsualizar — {{ $patient->case_title }}</x-slot>
 
-    <div class="container" style="margin-top: 30px;">
-        @if(session('success'))
-            <div class="alert alert-success">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                    <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-                {{ session('success') }}
+    <x-slot name="styles">
+        <link href="{{ asset('css/create-patient.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+    </x-slot>
+
+    <x-slot name="topbar">
+        <div class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-title">{{ $patient->case_title }}</div>
+                <div class="topbar-subtitle">
+                    <span class="mode-badge">
+                        <i data-lucide="{{ $patient->mode === 'basic' ? 'zap' : 'settings-2' }}"></i>
+                        Modo {{ $patient->mode === 'basic' ? 'Básico' : 'Avanzado' }}
+                    </span>
+                </div>
             </div>
-        @endif
+            <div class="topbar-right">
+                <a href="{{ route('teacher.patients.index') }}" class="btn btn-ghost btn-sm">
+                    <i data-lucide="arrow-left"></i>
+                    Mis Pacientes
+                </a>
+                <a href="{{ route('teacher.patients.create') }}" class="btn btn-ghost btn-sm">
+                    <i data-lucide="plus"></i>
+                    Crear Otro
+                </a>
+                @if(!$patient->is_published)
+                    <form action="{{ route('teacher.patients.publish', $patient) }}" method="POST" class="cp-form-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i data-lucide="send"></i>
+                            Publicar Paciente
+                        </button>
+                    </form>
+                @else
+                    <form action="{{ route('teacher.patients.publish', $patient) }}" method="POST" class="cp-form-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-ghost btn-sm">
+                            <i data-lucide="eye-off"></i>
+                            Despublicar
+                        </button>
+                    </form>
+                @endif
+            </div>
+        </div>
+    </x-slot>
 
-        <div class="header-card">
-            <h1>📋 {{ $patient->case_title }}</h1>
-            <div class="header-meta">
-                <span>🏥 {{ $patient->type->name ?? 'Sin tipo' }}</span>
-                <span>📅 Creado: {{ $patient->created_at->format('d/m/Y H:i') }}</span>
-                <span>📝 Versión: 1</span>
+    {{-- Errores de sesión --}}
+    @if(session('error'))
+        <div class="cp-alert-error">
+            <div class="cp-alert-icon"><i data-lucide="circle-alert"></i></div>
+            <div class="cp-alert-body">{{ session('error') }}</div>
+        </div>
+    @endif
+
+    @if(session('success'))
+        <div class="cp-alert-success">
+            <div class="cp-alert-success-icon"><i data-lucide="circle-check"></i></div>
+            <div class="cp-alert-success-text">{{ session('success') }}</div>
+        </div>
+    @endif
+
+    <div class="create-patient-layout">
+
+        {{-- ===== COLUMNA PRINCIPAL ===== --}}
+        <div class="create-patient-main">
+
+            {{-- Card: acciones principales --}}
+            <div class="cp-actions-grid">
+
+                <div class="cp-action-card">
+                    <div class="cp-action-card-header">
+                        <div class="cp-section-icon"><i data-lucide="play"></i></div>
+                        <p class="cp-action-card-title">Probar Simulación</p>
+                    </div>
+                    <p class="cp-action-card-desc">Habla con el paciente antes de publicarlo para verificar su
+                        comportamiento.</p>
+                    <div class="cp-action-card-footer">
+                        <select id="testAiSelect" class="form-control cp-action-select">
+                            @php
+                                $aiNames = ['openai' => 'ChatGPT', 'claude' => 'Claude', 'gemini' => 'Gemini', 'mistral' => 'Mistral', 'grok' => 'Grok'];
+                                $aiProvidersConfig = config('ai.providers', []);
+                            @endphp
+                            @foreach($aiNames as $key => $name)
+                                @if(isset($aiProvidersConfig[$key]))
+                                    <option value="{{ $key }}">{{ $name }}</option>
+                                @endif
+                            @endforeach
+                        </select>
+                        <button onclick="goToTest()" class="btn btn-primary btn-sm">
+                            <i data-lucide="play"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="cp-action-card">
+                    <div class="cp-action-card-header">
+                        <div class="cp-section-icon"><i data-lucide="clipboard-list"></i></div>
+                        <p class="cp-action-card-title">Cuestionario</p>
+                    </div>
+                    <p class="cp-action-card-desc">Crea o edita las preguntas de evaluación. Necesitas al menos una para
+                        poder publicar.</p>
+                    <div class="cp-action-card-footer">
+                        <a href="{{ route('teacher.patients.test', $patient) }}" class="btn btn-ghost btn-sm">
+                            <i data-lucide="clipboard-list"></i>
+                            Gestionar Preguntas
+                        </a>
+                    </div>
+                </div>
+
+                <div class="cp-action-card">
+                    <div class="cp-action-card-header">
+                        <div class="cp-section-icon"><i data-lucide="pencil"></i></div>
+                        <p class="cp-action-card-title">Editar Paciente</p>
+                    </div>
+                    <p class="cp-action-card-desc">Modifica los datos del caso. El prompt se regenerará automáticamente
+                        al guardar.</p>
+                    <div class="cp-action-card-footer">
+                        <a href="{{ route('teacher.patients.edit', $patient) }}" class="btn btn-ghost btn-sm">
+
+                            <i data-lucide="pencil"></i>
+                            Editar
+                        </a>
+                    </div>
+                </div>
+
             </div>
 
+            {{-- Card: métricas del prompt --}}
             @if($patient->prompt && $patient->prompt->prompt_content)
                 @php
                     $promptText = $patient->prompt->prompt_content;
                     $wordCount = str_word_count($promptText);
                     $charCount = strlen($promptText);
+                    $tokens = ceil($charCount / 4);
                 @endphp
-                <div class="stats-row">
-                    <div class="stat">
-                        <div class="stat-value">{{ number_format($wordCount) }}</div>
-                        <div class="stat-label">Palabras</div>
+
+                <div class="cp-section">
+                    <div class="cp-section-header">
+                        <div class="cp-section-icon"><i data-lucide="sparkles"></i></div>
+                        <h2 class="cp-section-title">Prompt Generado</h2>
                     </div>
-                    <div class="stat">
-                        <div class="stat-value">{{ number_format($charCount) }}</div>
-                        <div class="stat-label">Caracteres</div>
+                    <p class="cp-section-desc">El sistema ha generado automáticamente el prompt para la IA a partir de los
+                        datos que introdujiste.</p>
+
+                    {{-- Stats --}}
+                    <div class="cp-prompt-stats">
+                        @foreach([['Palabras', number_format($wordCount), 'file-text'], ['Caracteres', number_format($charCount), 'hash'], ['Tokens aprox.', '~' . number_format($tokens), 'cpu']] as [$label, $value, $icon])
+                            <div class="cp-prompt-stat">
+                                <div class="cp-prompt-stat-value">{{ $value }}</div>
+                                <div class="cp-prompt-stat-label">{{ $label }}</div>
+                            </div>
+                        @endforeach
                     </div>
-                    <div class="stat">
-                        <div class="stat-value">~{{ number_format(ceil($charCount / 4)) }}</div>
-                        <div class="stat-label">Tokens (aprox)</div>
+
+                    <div class="cp-prompt-toggle">
+                        <button onclick="showView('rendered')" id="btnRendered" class="btn btn-ghost btn-sm">
+                            <i data-lucide="eye"></i> Vista Formateada
+                        </button>
+                        <button onclick="showView('source')" id="btnSource" class="btn btn-ghost btn-sm">
+                            <i data-lucide="code"></i> Código Markdown
+                        </button>
+                        <div class="cp-prompt-toggle-right">
+                            <button onclick="copyPrompt()" class="btn btn-ghost btn-sm" id="copyBtn">
+                                <i data-lucide="copy"></i> Copiar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="cp-prompt-box">
+                        <div id="promptRendered" class="cp-prompt-rendered cp-prompt-hidden">
+                            {{ $patient->prompt->prompt_content }}
+                        </div>
+                        <pre id="promptSource"
+                            class="cp-prompt-source cp-prompt-hidden">{{ $patient->prompt->prompt_content }}</pre>
                     </div>
                 </div>
-            @endif
-        </div>
-
-        <div class="alert alert-info">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="16" x2="12" y2="12" />
-                <line x1="12" y1="8" x2="12.01" y2="8" />
-            </svg>
-            <div>
-                <strong>Revisa el prompt generado.</strong>
-                Puedes copiarlo y pegarlo directamente en ChatGPT, Claude, Gemini u otro modelo de IA.
-            </div>
-        </div>
-
-        <div class="view-toggle">
-            <button class="view-btn active" onclick="showView('rendered')">👁️ Vista Formateada</button>
-            <button class="view-btn" onclick="showView('source')">📝 Código Markdown</button>
-        </div>
-
-        <div class="prompt-container">
-            <div class="prompt-header">
-                <h2>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                    </svg>
-                    Prompt del Paciente
-                </h2>
-                <div class="header-actions">
-                    <button class="btn-copy" onclick="copyPrompt()" id="copyBtn">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                        </svg>
-                        <span>Copiar Prompt</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="prompt-body">
-                @if($patient->prompt && $patient->prompt->prompt_content)
-                    <div class="prompt-rendered" id="promptRendered"></div>
-                    <pre class="prompt-source" id="promptSource">{{ $patient->prompt->prompt_content }}</pre>
-                @else
-                    <p style="text-align: center; color: var(--color-text-muted); padding: 40px;">
+            @else
+                <div class="cp-section">
+                    <p class="p-salvaje">
                         No hay prompt generado para este paciente.
                     </p>
-                @endif
-            </div>
-        </div>
-
-        <div class="actions-card">
-            <div class="actions-info">
-                <strong>¿Todo listo?</strong><br>
-                Prueba la simulación antes de publicar, o copia el prompt para usarlo directamente.
-            </div>
-            <div class="actions-buttons">
-
-                {{-- Probar simulación con selector de IA --}}
-                @php
-                    $aiProvidersConfig = config('ai.providers');
-                    $aiNames = [
-                        'openai' => 'ChatGPT',
-                        'claude' => 'Claude',
-                        'gemini' => 'Gemini',
-                        'mistral' => 'Mistral',
-                        'grok' => 'Grok',
-                    ];
-                @endphp
-
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <select id="testAiSelect"
-                        style="padding: 10px 14px; border: 2px solid #dce1e6; border-radius: 8px; font-size: 14px; background: white; cursor: pointer;">
-                        @foreach($aiNames as $key => $name)
-                            @if(isset($aiProvidersConfig[$key]))
-                                <option value="{{ $key }}">{{ $name }}</option>
-                            @endif
-                        @endforeach
-                    </select>
-                    <a href="#" id="testSimulationBtn" class="btn-large btn-secondary-large" onclick="goToTest(event)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20"
-                            height="20">
-                            <polygon points="5 3 19 12 5 21 5 3" />
-                        </svg>
-                        Probar Simulación
-                    </a>
                 </div>
+            @endif
 
-                <a href="{{ route('patients.create') }}" class="btn-large btn-secondary-large">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                    Crear Otro Paciente
-                </a>
-
-                @if(!$patient->is_published)
-                    <form action="{{ route('patients.publish', $patient) }}" method="POST" style="display: inline;">
-                        @csrf
-                        <button type="submit" class="btn-large btn-primary-large">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                                <polyline points="22 4 12 14.01 9 11.01" />
-                            </svg>
-                            Publicar Paciente
-                        </button>
-                    </form>
-                @else
-                    <span class="btn-large" style="background: var(--color-success); color: white; cursor: default;">
-                        ✓ Paciente Publicado
-                    </span>
-                @endif
-            </div>
         </div>
-    </div>
-    <script>
-        function goToTest(e) {
-            e.preventDefault();
-            const aiModel = document.getElementById('testAiSelect').value;
-            const patientId = {{ $patient->id }};
-            window.location.href = `/simulacion/${aiModel}/${patientId}`;
-        }
-    </script>
 
-    <x-slot:scripts>
+        {{-- ===== SIDEBAR ===== --}}
+        <aside class="create-patient-sidebar">
+
+            {{-- Info del paciente --}}
+            <div class="cp-sidebar-card">
+                <div class="cp-sidebar-title">Detalles del Caso</div>
+                <div class="cp-sidebar-details">
+                    <div>
+                        <div class="cp-sidebar-detail-label">Asignatura</div>
+                        <div>{{ $patient->subject?->name ?? '—' }}</div>
+                    </div>
+                    <div>
+                        <div class="cp-sidebar-detail-label">
+                            Descripción</div>
+                        <div>{{ $patient->patient_description ?? '—' }}</div>
+                    </div>
+                    <div>
+                        <div class="cp-sidebar-detail-label">
+                            Estado</div>
+                        @if($patient->is_published)
+                            <span class="badge badge-success"><i data-lucide="check"></i> Publicado</span>
+                        @else
+                            <span class="badge badge-warning"><i data-lucide="clock"></i> Borrador</span>
+                        @endif
+                    </div>
+                    <div>
+                        <div class="cp-sidebar-detail-label">
+                            Creado</div>
+                        <div>{{ $patient->created_at->format('d/m/Y H:i') }}</div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Pasos siguientes --}}
+            <div class="cp-sidebar-card cp-sidebar-info">
+                <div class="cp-sidebar-info-icon"><i data-lucide="list-checks"></i></div>
+                <div class="cp-sidebar-info-title">Pasos Siguientes</div>
+                <div class="cp-sidebar-info-text">
+                    <ol class="cp-next-steps-list">
+                        <li>Revisa el prompt generado</li>
+                        <li>Prueba la simulación</li>
+                        <li>
+                            Crea las preguntas del test
+
+                        </li>
+                        <li>Publica el paciente</li>
+                    </ol>
+                </div>
+            </div>
+
+        </aside>
+
+    </div>
+
+    <x-slot name="scripts">
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-        <script src="{{ asset('js/patient-preview.js') }}"></script>
-    </x-slot:scripts>
+        <script>
+            // Renderizar Markdown al cargar
+            const rawPrompt = document.getElementById('promptSource')?.textContent ?? '';
+            const rendered = document.getElementById('promptRendered');
+            if (rendered && rawPrompt) {
+                rendered.innerHTML = marked.parse(rawPrompt);
+            }
+
+            function showView(view) {
+                document.getElementById('promptRendered').classList.toggle('cp-prompt-hidden', view !== 'rendered');
+                document.getElementById('promptSource').classList.toggle('cp-prompt-hidden', view !== 'source');
+                document.getElementById('btnRendered').className = 'btn btn-sm ' + (view === 'rendered' ? 'btn-primary' : 'btn-ghost');
+                document.getElementById('btnSource').className = 'btn btn-sm ' + (view === 'source' ? 'btn-primary' : 'btn-ghost');
+            }
+
+            function copyPrompt() {
+                navigator.clipboard.writeText(rawPrompt).then(() => {
+                    const btn = document.getElementById('copyBtn');
+                    btn.innerHTML = '<i data-lucide="check"></i> Copiado';
+                    lucide.createIcons();
+                    setTimeout(() => {
+                        btn.innerHTML = '<i data-lucide="copy"></i> Copiar';
+                        lucide.createIcons();
+                    }, 2000);
+                });
+            }
+
+            function goToTest() {
+                const ai = document.getElementById('testAiSelect').value;
+                window.location.href = `/simulacion/${ai}/{{ $patient->id }}`;
+            }
+        </script>
+    </x-slot>
+
 </x-layouts.app>
