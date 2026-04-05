@@ -29,45 +29,6 @@ use Carbon\Carbon;
  */
 class RegistrationController extends Controller
 {
-    // ==================== PASO 1: PRE-REGISTRO ====================
-
-    /**
-     * Muestra el formulario de pre-registro donde el usuario introduce su email.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function showPreRegisterForm()
-    {
-        return view('pages.auth.pre-register');
-    }
-
-    // ==================== PASO 2: ENVÍO DE INVITACIÓN ====================
-
-    /**
-     * Genera un token único y envía el enlace de invitación por correo.
-     * Si ya existía una invitación previa para ese email, la reemplaza.
-     *
-     * @param SendInvitateLinkRequest $request Petición validada con el campo 'email'
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function sendInviteLink(SendInvitateLinkRequest $request)
-    {
-        $email = $request->input('email');
-
-        // Si ya existe una invitación pendiente, la borramos para crear una nueva
-        UserInvitation::where('email', $email)->delete();
-
-        // Generar token seguro y guardar la invitación
-        $invite = UserInvitation::create([
-            'email' => $email,
-            'token' => Str::random(60),
-        ]);
-
-        // Enviar el email con el enlace de registro
-        Mail::to($email)->send(new SendRegistrationLink($invite->token));
-
-        return redirect()->back()->with('success', '¡Genial! Te hemos enviado un enlace a tu correo. Revísalo para continuar.');
-    }
 
     // ==================== PASO 3: FORMULARIO DE REGISTRO ====================
 
@@ -112,7 +73,6 @@ class RegistrationController extends Controller
         }
 
         return DB::transaction(function () use ($request, $invite) {
-            // Crear el usuario (el email se obtiene de la invitación, no del formulario, por seguridad)
             $user = User::create([
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
@@ -120,15 +80,20 @@ class RegistrationController extends Controller
                 'password' => Hash::make($request->password),
                 'birth_date' => $request->birth_date,
                 'gender' => $request->gender,
-                'role_id' => Role::STUDENT_ID,
+                'role_id' => $invite->role_id ?? Role::STUDENT_ID,
             ]);
 
-            // Borrar la invitación para que el enlace no se pueda reutilizar
+            if ($invite->subject_id) {
+                $role = ($invite->role_id === Role::STUDENT_ID) ? 'student' : 'collaborator';
+                DB::table('subject_user')->insert([
+                    'subject_id' => $invite->subject_id,
+                    'user_id' => $user->id,
+                    'role' => $role,
+                ]);
+            }
+
             $invite->delete();
-
-            // Iniciar sesión automáticamente
             Auth::login($user);
-
             return redirect('/');
         });
     }

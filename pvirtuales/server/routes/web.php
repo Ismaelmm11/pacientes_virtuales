@@ -111,6 +111,7 @@ Route::middleware(['auth', 'role.teacher'])
             Route::put('/{subject}', [SubjectController::class, 'update'])->name('update');
             Route::delete('/{subject}', [SubjectController::class, 'destroy'])->name('destroy');
             Route::post('/{subject}/alumnos', [SubjectController::class, 'enrollStudent'])->name('students.enroll');
+            Route::post('/{subject}/alumnos/importar', [SubjectController::class, 'bulkEnrollStudents'])->name('students.bulk-enroll');
             Route::delete('/{subject}/alumnos/{user}', [SubjectController::class, 'unenrollStudent'])->name('students.unenroll');
             Route::post('/{subject}/colaboradores', [SubjectController::class, 'inviteCollaborator'])->name('collaborators.invite');
             Route::delete('/{subject}/colaboradores/{user}', [SubjectController::class, 'removeCollaborator'])->name('collaborators.remove');

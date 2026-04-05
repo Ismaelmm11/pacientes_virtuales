@@ -28,32 +28,36 @@
 // TOOLTIPS DE AYUDA
 // ==========================================================================
 
-document.addEventListener('click', function (e) {
-    const icon = e.target.closest('.help-tooltip-icon');
+document.addEventListener("click", function (e) {
+    const icon = e.target.closest(".help-tooltip-icon");
     if (icon) {
-        const tooltip = icon.closest('.help-tooltip');
-        const wasActive = tooltip.classList.contains('active');
+        const tooltip = icon.closest(".help-tooltip");
+        const wasActive = tooltip.classList.contains("active");
 
         // Cerrar todos
-        document.querySelectorAll('.help-tooltip.active').forEach(t => t.classList.remove('active'));
+        document
+            .querySelectorAll(".help-tooltip.active")
+            .forEach((t) => t.classList.remove("active"));
 
         if (!wasActive) {
-            tooltip.classList.add('active');
+            tooltip.classList.add("active");
 
             // Comprobar si el bocadillo queda cortado arriba
-            const bubble = tooltip.querySelector('.help-tooltip-bubble');
+            const bubble = tooltip.querySelector(".help-tooltip-bubble");
             const rect = bubble.getBoundingClientRect();
             if (rect.top < 10) {
-                bubble.classList.add('below');
+                bubble.classList.add("below");
             } else {
-                bubble.classList.remove('below');
+                bubble.classList.remove("below");
             }
         }
         return;
     }
 
-    if (!e.target.closest('.help-tooltip')) {
-        document.querySelectorAll('.help-tooltip.active').forEach(t => t.classList.remove('active'));
+    if (!e.target.closest(".help-tooltip")) {
+        document
+            .querySelectorAll(".help-tooltip.active")
+            .forEach((t) => t.classList.remove("active"));
     }
 });
 
@@ -61,19 +65,24 @@ document.addEventListener('click', function (e) {
 // ACOMPAÑANTE
 // ==========================================================================
 
-const attendeeRadios  = document.querySelectorAll('input[name="attendee_type"]');
-const companionFields = document.getElementById('companionFields');
+const attendeeRadios = document.querySelectorAll('input[name="attendee_type"]');
+const companionFields = document.getElementById("companionFields");
 
 if (attendeeRadios.length) {
-    attendeeRadios.forEach(radio => {
-        radio.addEventListener('change', function () {
-            companionFields.classList.toggle('visible', this.value === 'companion');
+    attendeeRadios.forEach((radio) => {
+        radio.addEventListener("change", function () {
+            companionFields.classList.toggle(
+                "visible",
+                this.value === "companion",
+            );
         });
     });
 
-    const checked = document.querySelector('input[name="attendee_type"]:checked');
-    if (checked && checked.value === 'companion') {
-        companionFields.classList.add('visible');
+    const checked = document.querySelector(
+        'input[name="attendee_type"]:checked',
+    );
+    if (checked && checked.value === "companion") {
+        companionFields.classList.add("visible");
     }
 }
 
@@ -82,55 +91,80 @@ if (attendeeRadios.length) {
 // ==========================================================================
 
 const personalityTexts = {
-    colaborador:   'Estás tranquilo/a y dispuesto/a a colaborar con el médico. Confías en el sistema sanitario y vienes con buena disposición. Respondes a las preguntas de forma abierta y honesta.',
-    ansioso:       'Estás visiblemente nervioso/a y preocupado/a. La incertidumbre sobre tu salud te genera mucha ansiedad. Tiendes a hacer muchas preguntas y a pedir confirmación constante.',
-    reservado:     'Eres reservado/a y te cuesta abrirte al médico. Das respuestas cortas y hay que insistir para que des detalles.',
-    demandante:    'Estás impaciente y esperas respuestas inmediatas. Interrumpes con frecuencia y cuestionas las decisiones del médico.',
-    minimizador:   'Le quitas importancia a tus síntomas. Dices cosas como "seguro que no es nada" o "no sé ni por qué he venido".',
-    hipocondriaco: 'Estás muy asustado/a y convencido/a de que tienes algo grave. Has buscado tus síntomas en internet y estás convencido/a del peor escenario.',
-    agresivo:      'Estás enfadado/a y a la defensiva. Respondes de forma cortante y puedes llegar a levantar la voz si te sientes cuestionado/a.',
-    deprimido:     'Estás apático/a y sin energía. Hablas en voz baja y con desgana. Te cuesta expresar lo que sientes porque "da igual".',
-    desconfiado:   'No confías en los médicos ni en el sistema sanitario. Cuestionas todo lo que te dicen y pides segundas opiniones.',
-    confuso:       'Estás desorientado/a y te cuesta seguir la conversación. Puedes contradecirte sobre fechas o detalles.',
-    evasivo:       'Evitas responder a ciertas preguntas o cambias de tema cuando la conversación se acerca a algo incómodo.',
+    colaborador:
+        "Estás tranquilo/a y dispuesto/a a colaborar con el médico. Confías en el sistema sanitario y vienes con buena disposición. Respondes a las preguntas de forma abierta y honesta.",
+    ansioso:
+        "Estás visiblemente nervioso/a y preocupado/a. La incertidumbre sobre tu salud te genera mucha ansiedad. Tiendes a hacer muchas preguntas y a pedir confirmación constante.",
+    reservado:
+        "Eres reservado/a y te cuesta abrirte al médico. Das respuestas cortas y hay que insistir para que des detalles.",
+    demandante:
+        "Estás impaciente y esperas respuestas inmediatas. Interrumpes con frecuencia y cuestionas las decisiones del médico.",
+    minimizador:
+        'Le quitas importancia a tus síntomas. Dices cosas como "seguro que no es nada" o "no sé ni por qué he venido".',
+    hipocondriaco:
+        "Estás muy asustado/a y convencido/a de que tienes algo grave. Has buscado tus síntomas en internet y estás convencido/a del peor escenario.",
+    agresivo:
+        "Estás enfadado/a y a la defensiva. Respondes de forma cortante y puedes llegar a levantar la voz si te sientes cuestionado/a.",
+    deprimido:
+        'Estás apático/a y sin energía. Hablas en voz baja y con desgana. Te cuesta expresar lo que sientes porque "da igual".',
+    desconfiado:
+        "No confías en los médicos ni en el sistema sanitario. Cuestionas todo lo que te dicen y pides segundas opiniones.",
+    confuso:
+        "Estás desorientado/a y te cuesta seguir la conversación. Puedes contradecirte sobre fechas o detalles.",
+    evasivo:
+        "Evitas responder a ciertas preguntas o cambias de tema cuando la conversación se acerca a algo incómodo.",
 };
 
-const personalityRadios      = document.querySelectorAll('input[name="personality_type"]');
-const personalityPreview     = document.getElementById('personalityPreview');
-const personalityPreviewText = document.getElementById('personalityPreviewText');
-const customToggle           = document.getElementById('personalityCustomToggle');
-const customField            = document.getElementById('personalityCustomField');
-const customTextarea         = document.getElementById('personalityCustomText');
+const personalityRadios = document.querySelectorAll(
+    'input[name="personality_type"]',
+);
+const personalityPreview = document.getElementById("personalityPreview");
+const personalityPreviewText = document.getElementById(
+    "personalityPreviewText",
+);
+const customToggle = document.getElementById("personalityCustomToggle");
+const customField = document.getElementById("personalityCustomField");
+const customTextarea = document.getElementById("personalityCustomText");
 
 if (personalityRadios.length) {
-    personalityRadios.forEach(radio => {
-        radio.addEventListener('change', function () {
+    personalityRadios.forEach((radio) => {
+        radio.addEventListener("change", function () {
             const text = personalityTexts[this.value];
             if (text && personalityPreview) {
                 personalityPreviewText.textContent = text;
-                personalityPreview.classList.add('visible');
-                if (customField && customField.style.display === 'block') {
+                personalityPreview.classList.add("visible");
+                if (customField && customField.style.display === "block") {
                     customTextarea.value = text;
                 }
             }
         });
     });
 
-    const checkedP = document.querySelector('input[name="personality_type"]:checked');
+    const checkedP = document.querySelector(
+        'input[name="personality_type"]:checked',
+    );
     if (checkedP && personalityTexts[checkedP.value]) {
         personalityPreviewText.textContent = personalityTexts[checkedP.value];
-        personalityPreview.classList.add('visible');
+        personalityPreview.classList.add("visible");
     }
 }
 
 if (customToggle) {
-    customToggle.addEventListener('click', function () {
-        const isOpen = customField.style.display === 'block';
-        customField.style.display = isOpen ? 'none' : 'block';
-        customToggle.textContent = isOpen ? '✏️ Quiero personalizar este texto' : '✕ Usar texto automático';
+    customToggle.addEventListener("click", function () {
+        const isOpen = customField.style.display === "block";
+        customField.style.display = isOpen ? "none" : "block";
+        customToggle.textContent = isOpen
+            ? "✏️ Quiero personalizar este texto"
+            : "✕ Usar texto automático";
         if (!isOpen) {
-            const checked = document.querySelector('input[name="personality_type"]:checked');
-            if (checked && personalityTexts[checked.value]) {
+            const checked = document.querySelector(
+                'input[name="personality_type"]:checked',
+            );
+            if (
+                checked &&
+                personalityTexts[checked.value] &&
+                !customTextarea.value.trim()
+            ) {
                 customTextarea.value = personalityTexts[checked.value];
             }
         }
@@ -157,11 +191,23 @@ const knowledgeDescriptions = {
     5: 'Profesional sanitario. Usa terminología técnica: "dolor precordial opresivo con irradiación a MSI", "sospecho un SCA".',
 };
 
-const verbosityLabels = ['Muy escueto', 'Escueto', 'Normal', 'Detallista', 'Muy detallista'];
-const knowledgeLabels = ['Ninguno', 'Mínimo', 'Básico', 'Moderado', 'Profesional'];
+const verbosityLabels = [
+    "Muy escueto",
+    "Escueto",
+    "Normal",
+    "Detallista",
+    "Muy detallista",
+];
+const knowledgeLabels = [
+    "Ninguno",
+    "Mínimo",
+    "Básico",
+    "Moderado",
+    "Profesional",
+];
 
 function initSlider(sliderId, valueId, previewId, labels, descriptions) {
-    const slider  = document.getElementById(sliderId);
+    const slider = document.getElementById(sliderId);
     const valueEl = document.getElementById(valueId);
     const preview = document.getElementById(previewId);
     if (!slider) return;
@@ -174,73 +220,104 @@ function initSlider(sliderId, valueId, previewId, labels, descriptions) {
         }
     }
 
-    slider.addEventListener('input', update);
+    slider.addEventListener("input", update);
     update();
 }
 
-initSlider('verbosity_level', 'verbosityValue', 'verbosityPreview', verbosityLabels, verbosityDescriptions);
-initSlider('medical_knowledge', 'knowledgeValue', 'knowledgePreview', knowledgeLabels, knowledgeDescriptions);
+initSlider(
+    "verbosity_level",
+    "verbosityValue",
+    "verbosityPreview",
+    verbosityLabels,
+    verbosityDescriptions,
+);
+initSlider(
+    "medical_knowledge",
+    "knowledgeValue",
+    "knowledgePreview",
+    knowledgeLabels,
+    knowledgeDescriptions,
+);
 
 // Toggles de personalización de sliders
 function initCustomToggle(toggleId, fieldId, textareaId, descObj, sliderId) {
-    const toggle   = document.getElementById(toggleId);
-    const field    = document.getElementById(fieldId);
+    const toggle = document.getElementById(toggleId);
+    const field = document.getElementById(fieldId);
     const textarea = document.getElementById(textareaId);
-    const slider   = document.getElementById(sliderId);
+    const slider = document.getElementById(sliderId);
     if (!toggle) return;
 
-    toggle.addEventListener('click', function () {
-        const isOpen = field.style.display === 'block';
-        field.style.display = isOpen ? 'none' : 'block';
-        toggle.textContent = isOpen ? '✏️ Quiero personalizar este texto' : '✕ Usar texto automático';
+    toggle.addEventListener("click", function () {
+        const isOpen = field.style.display === "block";
+        field.style.display = isOpen ? "none" : "block";
+        toggle.textContent = isOpen
+            ? "✏️ Quiero personalizar este texto"
+            : "✕ Usar texto automático";
         if (!isOpen && slider) textarea.value = descObj[parseInt(slider.value)];
     });
 
     if (slider) {
-        slider.addEventListener('input', function () {
-            if (field.style.display === 'block') textarea.value = descObj[parseInt(this.value)];
+        slider.addEventListener("input", function () {
+            if (field.style.display === "block")
+                textarea.value = descObj[parseInt(this.value)];
         });
     }
 }
 
-initCustomToggle('verbosityCustomToggle', 'verbosityCustomField', 'verbosityCustomText', verbosityDescriptions, 'verbosity_level');
-initCustomToggle('knowledgeCustomToggle', 'knowledgeCustomField', 'knowledgeCustomText', knowledgeDescriptions, 'medical_knowledge');
+initCustomToggle(
+    "verbosityCustomToggle",
+    "verbosityCustomField",
+    "verbosityCustomText",
+    verbosityDescriptions,
+    "verbosity_level",
+);
+initCustomToggle(
+    "knowledgeCustomToggle",
+    "knowledgeCustomField",
+    "knowledgeCustomText",
+    knowledgeDescriptions,
+    "medical_knowledge",
+);
 
 // ==========================================================================
 // UTILIDADES DE LISTAS DINÁMICAS
 // ==========================================================================
 
 function removeItem(button) {
-    const container = button.closest('.cp-dynamic-list');
-    button.closest('.cp-dynamic-item').remove();
+    const container = button.closest(".cp-dynamic-list");
+    button.closest(".cp-dynamic-item").remove();
     updateRemoveButtons(container);
 }
 
 function updateRemoveButtons(container) {
     if (!container) return;
-    const items = container.querySelectorAll('.cp-dynamic-item');
-    items.forEach(item => {
-        const btn = item.querySelector('.cp-btn-remove');
-        if (btn) btn.style.visibility = items.length <= 1 ? 'hidden' : 'visible';
+    const items = container.querySelectorAll(".cp-dynamic-item");
+    items.forEach((item) => {
+        const btn = item.querySelector(".cp-btn-remove");
+        if (btn)
+            btn.style.visibility = items.length <= 1 ? "hidden" : "visible";
     });
 }
 
 function handleRevealChange(select) {
-    const item = select.closest('.cp-dynamic-item');
-    const lieField = item ? item.querySelector('.cp-lie-field') : null;
-    if (lieField) lieField.classList.toggle('visible', select.value === 'miente');
+    const item = select.closest(".cp-dynamic-item");
+    const lieField = item ? item.querySelector(".cp-lie-field") : null;
+    if (lieField)
+        lieField.classList.toggle("visible", select.value === "miente");
 }
 
 // ==========================================================================
 // SÍNTOMAS
 // ==========================================================================
 
-let symptomCount = document.querySelectorAll('#symptomsContainer .cp-dynamic-item').length || 1;
+let symptomCount =
+    document.querySelectorAll("#symptomsContainer .cp-dynamic-item").length ||
+    1;
 
 function addSymptom() {
-    const container = document.getElementById('symptomsContainer');
-    const item = document.createElement('div');
-    item.className = 'cp-dynamic-item';
+    const container = document.getElementById("symptomsContainer");
+    const item = document.createElement("div");
+    item.className = "cp-dynamic-item";
     item.innerHTML = `
         <div class="cp-dynamic-item-fields">
             <div class="cp-dynamic-item-field">
@@ -280,9 +357,9 @@ function addSymptom() {
 let medicationCount = 0;
 
 function addMedication() {
-    const container = document.getElementById('medicationsContainer');
-    const item = document.createElement('div');
-    item.className = 'cp-dynamic-item';
+    const container = document.getElementById("medicationsContainer");
+    const item = document.createElement("div");
+    item.className = "cp-dynamic-item";
     item.innerHTML = `
         <div class="cp-dynamic-item-fields">
             <div class="cp-dynamic-item-field">
@@ -311,9 +388,9 @@ function addMedication() {
 let viceCount = 0;
 
 function addVice() {
-    const container = document.getElementById('vicesContainer');
-    const item = document.createElement('div');
-    item.className = 'cp-dynamic-item';
+    const container = document.getElementById("vicesContainer");
+    const item = document.createElement("div");
+    item.className = "cp-dynamic-item";
     item.innerHTML = `
         <div class="cp-dynamic-item-fields">
             <div class="cp-dynamic-item-field">
@@ -352,9 +429,9 @@ function addVice() {
 let fraseLimiteCount = 0;
 
 function addFraseLimite() {
-    const container = document.getElementById('frasesLimiteContainer');
-    const item = document.createElement('div');
-    item.className = 'cp-dynamic-item';
+    const container = document.getElementById("frasesLimiteContainer");
+    const item = document.createElement("div");
+    item.className = "cp-dynamic-item";
     item.innerHTML = `
         <div class="cp-dynamic-item-fields" style="grid-template-columns: 1fr;">
             <div class="cp-dynamic-item-field">
@@ -377,12 +454,39 @@ function addFraseLimite() {
 // INICIALIZACIÓN
 // ==========================================================================
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener("DOMContentLoaded", function () {
     // Scroll a errores de validación si los hay
-    const errors = document.getElementById('validationErrors');
-    if (errors) errors.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const errors = document.getElementById("validationErrors");
+    if (errors) errors.scrollIntoView({ behavior: "smooth", block: "center" });
 
     // Inicializar botones de eliminar en el primer síntoma
-    const symptomsContainer = document.getElementById('symptomsContainer');
+    const symptomsContainer = document.getElementById("symptomsContainer");
     if (symptomsContainer) updateRemoveButtons(symptomsContainer);
+
+    // Auto-abrir campos personalizados si tienen valor (modo edición con texto custom previo)
+    [
+        [
+            "personalityCustomField",
+            "personalityCustomText",
+            "personalityCustomToggle",
+        ],
+        [
+            "verbosityCustomField",
+            "verbosityCustomText",
+            "verbosityCustomToggle",
+        ],
+        [
+            "knowledgeCustomField",
+            "knowledgeCustomText",
+            "knowledgeCustomToggle",
+        ],
+    ].forEach(([fieldId, textareaId, toggleId]) => {
+        const field = document.getElementById(fieldId);
+        const textarea = document.getElementById(textareaId);
+        const toggle = document.getElementById(toggleId);
+        if (field && textarea && toggle && textarea.value.trim()) {
+            field.style.display = "block";
+            toggle.textContent = "✕ Usar texto automático";
+        }
+    });
 });

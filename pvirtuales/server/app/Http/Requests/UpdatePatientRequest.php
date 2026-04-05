@@ -50,7 +50,6 @@ class UpdatePatientRequest extends FormRequest
             'medical_history' => 'nullable|string|max:2000',
             'current_medications' => 'nullable|string|max:1000',
             'real_diagnosis' => 'required|string|max:300',
-            'key_findings' => 'nullable|string|max:1500',
             'frase_inicial' => 'required_if:mode,basic|nullable|string|max:1000',
             'motivo_consulta' => 'required_if:mode,basic|nullable|string|max:1000',
 
@@ -123,8 +122,7 @@ class UpdatePatientRequest extends FormRequest
             'current_medications.max' => 'La medicación actual no puede exceder 1000 caracteres.',
             'real_diagnosis.required' => 'El diagnóstico real es obligatorio.',
             'real_diagnosis.max' => 'El diagnóstico no puede exceder 300 caracteres.',
-            'key_findings.max' => 'Los hallazgos clave no pueden exceder 1500 caracteres.',
-
+            
             // Personalidad
             'personality_type.required' => 'Debes seleccionar un tipo de personalidad.',
             'personality_type.in' => 'El tipo de personalidad seleccionado no es válido.',
@@ -186,7 +184,6 @@ class UpdatePatientRequest extends FormRequest
             'medical_history' => 'antecedentes médicos',
             'current_medications' => 'medicación actual',
             'real_diagnosis' => 'diagnóstico real',
-            'key_findings' => 'hallazgos clave',
             'personality_type' => 'tipo de personalidad',
             'verbosity_level' => 'nivel de verbosidad',
             'medical_knowledge' => 'conocimiento médico',

@@ -135,8 +135,8 @@
                                         @endif
 
                                         {{-- Eliminar --}}
-                                        <<form action="{{ route('teacher.patients.destroy', [$patient, 'show']) }}" method="POST"
-                                            style="display: inline;"
+                                        <<form action="{{ route('teacher.patients.destroy', [$patient, 'show']) }}"
+                                            method="POST" style="display: inline;"
                                             onsubmit="return confirm('¿Eliminar este paciente? Esta acción no se puede deshacer.')">
                                             @csrf
                                             @method('DELETE')
@@ -144,7 +144,7 @@
                                                 title="Eliminar paciente">
                                                 <i data-lucide="trash-2"></i>
                                             </button>
-                                        </form>
+                                            </form>
 
                                     </div>
                                 </td>
@@ -169,6 +169,7 @@
         </div>
 
         {{-- Formulario para inscribir alumno --}}
+        {{-- Formulario individual --}}
         <div class="card-body-form">
             <form action="{{ route('teacher.subjects.students.enroll', $subject) }}" method="POST" class="form-inline">
                 @csrf
@@ -182,7 +183,63 @@
             @error('email')
                 <div class="form-error">{{ $message }}</div>
             @enderror
+            @if(session('success'))
+                <div class="form-success">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="form-error">{{ session('error') }}</div>
+            @endif
         </div>
+
+        {{-- Formulario importación masiva --}}
+        <div class="card-body-form" style="border-top: 1px solid var(--border);">
+            <form action="{{ route('teacher.subjects.students.bulk-enroll', $subject) }}" method="POST"
+                enctype="multipart/form-data" class="form-inline">
+                @csrf
+                <input type="file" name="file" accept=".csv" class="form-control" required>
+                <button type="submit" class="btn btn-secondary btn-sm">
+                    <i data-lucide="upload"></i>
+                    Importar desde CSV
+                </button>
+
+            </form>
+            @if(session('bulk_error'))
+                <div class="form-error">{{ session('bulk_error') }}</div>
+            @endif
+        </div>
+
+        {{-- Resultados de importación --}}
+        @if(session('bulk_enrolled') || session('bulk_invited') || session('bulk_already_enrolled') || session('bulk_failed'))
+            <div class="card-body-form">
+                @if(session('bulk_enrolled'))
+                    <div class="form-success">
+                        <strong>Inscritos ({{ count(session('bulk_enrolled')) }}):</strong>
+                        {{ implode(', ', session('bulk_enrolled')) }}
+                    </div>
+                @endif
+                @if(session('bulk_invited'))
+                    <div class="form-success">
+                        <strong>Invitación enviada ({{ count(session('bulk_invited')) }}):</strong>
+                        {{ implode(', ', session('bulk_invited')) }}
+                    </div>
+                @endif
+                @if(session('bulk_already_enrolled'))
+                    <div class="form-info">
+                        <strong>Ya inscritos ({{ count(session('bulk_already_enrolled')) }}):</strong>
+                        {{ implode(', ', session('bulk_already_enrolled')) }}
+                    </div>
+                @endif
+                @if(session('bulk_failed'))
+                    <div class="form-error">
+                        <strong>No se pudo enviar el email, vuelve a intentarlo:</strong><br>
+                        @foreach(session('bulk_failed') as $failedEmail)
+                            {{ $failedEmail }}<br>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        @endif
+
 
         @if($subject->students->isEmpty())
             <div class="empty-state">

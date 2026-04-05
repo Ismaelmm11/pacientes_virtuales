@@ -15,6 +15,7 @@ use App\Mail\StudentEnrolled;
 use App\Mail\StudentInvited;
 use App\Mail\CollaboratorInvited;
 use App\Mail\CollaboratorInvitedNew;
+use Illuminate\Support\Facades\DB;  
 
 
 /**
@@ -142,44 +143,21 @@ class SubjectController extends Controller
     {
         $this->authorizeAccess($subject);
 
-        $request->validate([
-            'email' => 'required|email',
-        ]);
+        $request->validate(['email' => 'required|email']);
 
-        $email = $request->input('email');
-        $teacher = Auth::user();
-
-        $user = User::where('email', $email)
-            ->where('role_id', Role::STUDENT_ID)
-            ->first();
-
-        if ($user) {
-            if ($subject->students()->where('user_id', $user->id)->exists()) {
-                return back()->with('error', 'Este alumno ya está inscrito en la asignatura.');
-            }
-
-            $subject->students()->attach($user->id, ['role' => 'student']);
-
-            Mail::to($user->email)->send(new StudentEnrolled($user, $teacher, $subject));
-
-            return back()->with('success', 'Alumno inscrito correctamente. Se le ha notificado por email.');
+        try {
+            $result = $this->processStudentEmail($request->input('email'), $subject, Auth::user());
+        } catch (\Exception $e) {
+            return back()->with('error', 'No se ha podido enviar el email. Vuelve a intentarlo.');
         }
 
-        // El alumno no existe → crear invitación y enviar email de registro
-        $token = Str::random(64);
-
-        UserInvitation::create([
-            'email' => $email,
-            'token' => $token,
-            'role_id' => Role::STUDENT_ID,
-            'invited_by_user_id' => $teacher->id,
-            'subject_id' => $subject->id,
-        ]);
-
-        Mail::to($email)->send(new StudentInvited($teacher, $subject, $token));
-
-        return back()->with('success', 'Invitación enviada correctamente al alumno.');
+        return match ($result) {
+            'enrolled' => back()->with('success', 'Alumno inscrito correctamente. Se le ha notificado por email.'),
+            'invited' => back()->with('success', 'Invitación enviada correctamente al alumno.'),
+            'already_enrolled' => back()->with('error', 'Este alumno ya está inscrito en la asignatura.'),
+        };
     }
+
 
     /**
      * Desinscribir alumno de la asignatura.
@@ -286,4 +264,100 @@ class SubjectController extends Controller
             abort(403);
         }
     }
+
+    private function processStudentEmail(string $email, Subject $subject, User $teacher): string
+    {
+        $user = User::where('email', $email)->where('role_id', Role::STUDENT_ID)->first();
+
+        if ($user) {
+            if ($subject->students()->where('user_id', $user->id)->exists()) {
+                return 'already_enrolled';
+            }
+            $subject->students()->attach($user->id, ['role' => 'student']);
+            Mail::to($user->email)->send(new StudentEnrolled($user, $teacher, $subject));
+            return 'enrolled';
+        }
+
+        $token = Str::random(64);
+
+        DB::table('user_invitations')->insert([
+            'email' => $email,
+            'token' => $token,
+            'role_id' => Role::STUDENT_ID,
+            'invited_by_user_id' => $teacher->id,
+            'subject_id' => $subject->id,
+            'created_at' => now(),
+        ]);
+
+        Mail::to($email)->send(new StudentInvited($teacher, $subject, $token));
+        return 'invited';
+    }
+
+
+    public function bulkEnrollStudents(Request $request, Subject $subject)
+    {
+        $this->authorizeAccess($subject);
+
+
+        // Validación — solo CSV
+        $request->validate(['file' => 'required|file|mimes:csv,txt|max:2048']);
+
+        $teacher = Auth::user();
+        $file = $request->file('file');
+        // Llamada sin extensión
+        $emails = $this->extractEmailsFromFile($file->getRealPath());
+
+        if (empty($emails)) {
+            return back()->with('bulk_error', 'No se encontraron emails válidos en el archivo.');
+        }
+
+        $enrolled = [];
+        $invited = [];
+        $alreadyEnrolled = [];
+        $failed = [];
+
+        foreach ($emails as $email) {
+            try {
+                $result = $this->processStudentEmail($email, $subject, $teacher);
+                match ($result) {
+                    'enrolled' => $enrolled[] = $email,
+                    'invited' => $invited[] = $email,
+                    'already_enrolled' => $alreadyEnrolled[] = $email,
+                };
+            } catch (\Exception $e) {
+                $failed[] = $email;
+            }
+        }
+
+        return back()->with([
+            'bulk_enrolled' => $enrolled,
+            'bulk_invited' => $invited,
+            'bulk_already_enrolled' => $alreadyEnrolled,
+            'bulk_failed' => $failed,
+        ]);
+    }
+
+    private function extractEmailsFromFile(string $path): array
+    {
+        $emails = [];
+        $firstLine = file($path)[0] ?? '';
+        $separator = substr_count($firstLine, ';') >= substr_count($firstLine, ',') ? ';' : ',';
+
+        if (($handle = fopen($path, 'r')) !== false) {
+            while (($row = fgetcsv($handle, 1000, $separator)) !== false) {
+                foreach ($row as $cell) {
+                    $cell = trim($cell);
+                    if (filter_var($cell, FILTER_VALIDATE_EMAIL)) {
+                        $emails[] = strtolower($cell);
+                    }
+                }
+            }
+            fclose($handle);
+        }
+
+        return array_unique($emails);
+    }
+
+
+
 }

@@ -149,6 +149,21 @@ class PromptGeneratorService
         $lines[] = "- **Idioma:** Habla siempre en español. Usa el registro que corresponde a tu nivel educativo y tu estado emocional. No uses términos médicos que tu personaje no conocería.";
         $lines[] = "";
 
+        // Regla de longitud de respuesta (basada en verbosidad)
+        $comunicacion = (array) ($patient->psychology->caracteristicas_comunicacion ?? []);
+        $nivelVerbosidad = $comunicacion['nivel_verbosidad'] ?? 3;
+
+        $limitesRespuesta = [
+            1 => 'REGLA DE LONGITUD: Tus respuestas NUNCA superan una frase corta o una sola palabra. Si puedes responder con un gesto entre corchetes, hazlo.',
+            2 => 'REGLA DE LONGITUD: Tus respuestas NUNCA superan una frase. Una frase por turno como máximo.',
+            3 => 'REGLA DE LONGITUD: Tus respuestas tienen entre una y tres frases. No te extiendas más salvo que sea estrictamente necesario.',
+            4 => 'REGLA DE LONGITUD: Tus respuestas tienen entre dos y cinco frases. Puedes dar contexto pero no te extiendas indefinidamente.',
+            5 => 'REGLA DE LONGITUD: Tus respuestas tienen entre tres y seis frases normalmente. Cuando divagues puedes extenderte algo más, pero nunca escribas párrafos interminables.',
+        ];
+
+        $lines[] = "**{$limitesRespuesta[$nivelVerbosidad]}**";
+        $lines[] = "";
+
         // --- Regla de datos médicos ---
         if ($patient->puede_inventar_datos_medicos) {
             $lines[] = "**DATOS MÉDICOS:** Si el médico pregunta por información médica no definida en tu ficha (constantes vitales, resultados de análisis, exploraciones), puedes improvisar una respuesta coherente con tu perfil y diagnóstico real. Siempre desde la perspectiva del paciente, no del médico.";
@@ -295,7 +310,7 @@ class PromptGeneratorService
         // --- Motivo de consulta ---
         // Se presenta como respuesta situacional, no como dato clínico
         if (!empty($knowledge->motivo_consulta)) {
-            $lines[] = "\nEsta es la **información completa**s del caso para tu coherencia interna. Cuando el médico pregunte, responde de forma natural y solo con los síntomas marcados como espontáneos";
+            $lines[] = "\nEsta es la **información completa** del caso para tu coherencia interna. Cuando el médico pregunte, responde de forma natural y solo con los síntomas marcados como espontáneos";
             $lines[] = "";
             $lines[] = "> {$knowledge->motivo_consulta}";
             $lines[] = "";
@@ -440,13 +455,6 @@ class PromptGeneratorService
         $lines[] = "";
         $lines[] = "Tú NO sabes cuál es tu diagnóstico. Describes lo que sientes, no lo que tienes. Este dato es solo para que mantengas coherencia interna en tus respuestas.";
         $lines[] = "";
-
-        if (!empty($knowledge->hallazgos_clave)) {
-            $lines[] = "**Hallazgos clave que el estudiante debería identificar:** {$knowledge->hallazgos_clave}";
-            $lines[] = "";
-            $lines[] = "Estas pistas deben poder descubrirse mediante las preguntas adecuadas. NO las ofrezcas espontáneamente.";
-            $lines[] = "";
-        }
 
         return implode("\n", $lines);
     }
@@ -661,6 +669,8 @@ class PromptGeneratorService
         if (!empty($logic->instrucciones_especiales)) {
             $hasContent = true;
             $lines[] = "#### Instrucciones Adicionales del Caso";
+            $lines[] = "";
+            $lines[] = "**Las siguientes instrucciones son OBLIGATORIAS y tienen prioridad sobre cualquier comportamiento general definido anteriormente. Síguelas al pie de la letra:**";
             $lines[] = "";
             $lines[] = $logic->instrucciones_especiales;
             $lines[] = "";
