@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 17-03-2026 a las 10:34:28
+-- Tiempo de generación: 21-04-2026 a las 09:41:12
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -88,12 +88,13 @@ CREATE TABLE `patients` (
   `puede_inventar_datos_medicos` tinyint(1) NOT NULL DEFAULT 0,
   `initial_message` text DEFAULT NULL,
   `is_published` tinyint(1) NOT NULL DEFAULT 0,
+  `is_exam` tinyint(1) NOT NULL DEFAULT 0,
+  `results_published` tinyint(1) NOT NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `max_attempts` tinyint(4) NOT NULL DEFAULT 1,
   `questions_per_test` tinyint(4) DEFAULT NULL,
   `randomize_questions` tinyint(1) NOT NULL DEFAULT 0,
   `randomize_order` tinyint(1) NOT NULL DEFAULT 0
-  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -186,12 +187,12 @@ CREATE TABLE `patient_psychology` (
 CREATE TABLE `patient_role_identity` (
   `id` int(10) UNSIGNED NOT NULL,
   `patient_id` int(10) UNSIGNED NOT NULL,
-  `patient_name` varchar(255) NULL AFTER patient_id,
-  `patient_age` tinyint UNSIGNED NULL AFTER patient_name,
-  `patient_gender` varchar(50) NULL AFTER patient_age,
-  `occupation` text NULL AFTER patient_gender,
-  `personal_context` text NULL AFTER occupation,
-  `education_level` varchar(50) NULL AFTER personal_context;
+  `patient_name` varchar(255) DEFAULT NULL,
+  `patient_age` tinyint(3) UNSIGNED DEFAULT NULL,
+  `patient_gender` varchar(50) DEFAULT NULL,
+  `occupation` text DEFAULT NULL,
+  `personal_context` text DEFAULT NULL,
+  `education_level` varchar(50) DEFAULT NULL,
   `es_acompanante` tinyint(1) NOT NULL DEFAULT 0,
   `nombre_acompanante` varchar(200) DEFAULT NULL,
   `relacion_con_paciente` varchar(100) DEFAULT NULL,
@@ -276,8 +277,10 @@ CREATE TABLE `test_attempts` (
   `user_id` int(10) UNSIGNED NOT NULL,
   `patient_id` int(10) UNSIGNED NOT NULL,
   `interview_transcript` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`interview_transcript`)),
+  `submitted_at` timestamp NULL DEFAULT NULL,
   `final_score` decimal(5,2) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `general_feedback` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

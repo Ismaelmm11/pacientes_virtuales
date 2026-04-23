@@ -1,6 +1,6 @@
 <x-layouts.app>
 
-    <x-slot name="title">Resultados de Tests</x-slot>
+    <x-slot name="title">Resultados de Exámenes</x-slot>
 
     <x-slot name="styles">
         <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
@@ -9,118 +9,114 @@
     <x-slot name="topbar">
         <div class="topbar">
             <div class="topbar-left">
-                <div class="topbar-title">Resultados de Tests</div>
-                <div class="topbar-subtitle">Tests enviados por tus alumnos</div>
+                <div class="topbar-title">Resultados de Exámenes</div>
+                <div class="topbar-subtitle">Pacientes marcados como examen y el estado de sus correcciones</div>
             </div>
         </div>
     </x-slot>
-
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-card-icon primary"><i data-lucide="clipboard-list"></i></div>
-            <div class="stat-card-info">
-                <div class="stat-card-value">{{ $totalSubmitted }}</div>
-                <div class="stat-card-label">Tests enviados</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-card-icon warning"><i data-lucide="pencil"></i></div>
-            <div class="stat-card-info">
-                <div class="stat-card-value">{{ $pendingGrading }}</div>
-                <div class="stat-card-label">Pendientes corrección</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-card-icon success"><i data-lucide="check-circle"></i></div>
-            <div class="stat-card-info">
-                <div class="stat-card-value">{{ $gradedCount }}</div>
-                <div class="stat-card-label">Corregidos</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-card-icon secondary"><i data-lucide="bar-chart-2"></i></div>
-            <div class="stat-card-info">
-                <div class="stat-card-value">{{ $avgGrade ? number_format($avgGrade, 2) : '—' }}</div>
-                <div class="stat-card-label">Nota media</div>
-            </div>
-        </div>
-    </div>
 
     <div class="card mt-lg">
         <div class="card-header">
             <div class="card-header-title">
                 <i data-lucide="clipboard-check"></i>
-                Todos los resultados
+                Pacientes de examen
             </div>
         </div>
 
-        @if($attempts->isEmpty())
+        @if($examPatients->isEmpty())
             <div class="empty-state">
                 <div class="empty-state-icon"><i data-lucide="clipboard-x"></i></div>
-                <div class="empty-state-title">Sin tests enviados aún</div>
-                <div class="empty-state-text">Cuando tus alumnos envíen el cuestionario tras la consulta aparecerán aquí.</div>
+                <div class="empty-state-title">Sin pacientes de examen</div>
+                <div class="empty-state-text">
+                    Cuando marques un paciente como examen aparecerá aquí con el estado de sus correcciones.
+                </div>
             </div>
         @else
             <div class="table-wrapper" style="border: none; border-radius: 0;">
                 <table>
                     <thead>
                         <tr>
-                            <th>Alumno</th>
                             <th>Paciente</th>
                             <th>Asignatura</th>
+                            <th>Consultas</th>
                             <th>Estado</th>
-                            <th>Nota</th>
-                            <th>Enviado</th>
+                            <th>Nota media</th>
                             <th class="actions">Acción</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($attempts as $attempt)
+                        @foreach($examPatients as $patient)
                             <tr>
+                                {{-- Título del paciente --}}
                                 <td>
-                                    <div class="patient-name">{{ $attempt->user?->full_name ?? '—' }}</div>
-                                    <div class="patient-desc">{{ $attempt->user?->email ?? '' }}</div>
-                                </td>
-                                <td>
-                                    <span class="text-sm">{{ $attempt->patient?->case_title ?? '—' }}</span>
-                                </td>
-                                <td>
-                                    <span class="text-sm text-muted">{{ $attempt->patient?->subject?->name ?? '—' }}</span>
-                                </td>
-                                <td>
-                                    @if($attempt->final_score !== null)
-                                        <span class="badge badge-success">Corregido</span>
-                                    @else
-                                        <span class="badge badge-warning">Pdte. corrección</span>
+                                    <div class="patient-name">{{ $patient->case_title }}</div>
+                                    @if($patient->patient_description)
+                                        <div class="patient-desc">{{ $patient->patient_description }}</div>
                                     @endif
                                 </td>
+
+                                {{-- Asignatura --}}
                                 <td>
-                                    @if($attempt->final_score !== null)
-                                        @php $score = (float) $attempt->final_score; @endphp
-                                        <span class="badge {{ $score >= 5 ? 'badge-success' : 'badge-danger' }}">
-                                            {{ number_format($score, 2) }} / 10
+                                    <span class="text-sm text-muted">{{ $patient->subject?->name ?? '—' }}</span>
+                                </td>
+
+                                {{-- Consultas hechas / total posibles --}}
+                                <td>
+                                    @if($patient->total_possible === null)
+                                        {{-- Intentos ilimitados: solo mostramos las hechas --}}
+                                        <span class="text-sm">{{ $patient->submitted_count }}</span>
+                                    @else
+                                        <span class="text-sm">
+                                            {{ $patient->submitted_count }} / {{ $patient->total_possible }}
+                                        </span>
+                                    @endif
+                                </td>
+
+                                {{-- Estado: publicado o pendiente de corrección --}}
+                                <td>
+                                    @if($patient->results_published)
+                                        <span class="badge badge-success">Publicado</span>
+                                    @elseif($patient->pending_grading > 0)
+                                        <span class="badge badge-warning">Pdte. corrección</span>
+                                    @elseif($patient->submitted_count > 0 && $patient->total_possible !== null && $patient->submitted_count >= $patient->total_possible)
+                                        {{-- Todos los intentos realizados y todos corregidos --}}
+                                        <span class="badge badge-secondary">Listo para publicar</span>
+                                    @elseif($patient->submitted_count > 0)
+                                        {{-- Todos los intentos realizados y todos corregidos --}}
+                                        <span class="badge badge-secondary">Faltan
+                                            {{ $patient->total_possible - $patient->submitted_count }} consultas</span>
+                                    @else
+                                        <span class="badge badge-secondary">Sin entregas</span>
+                                    @endif
+
+                                </td>
+
+                                {{-- Nota media (solo si publicado) --}}
+                                <td>
+                                    @if($patient->avg_grade !== null)
+                                        @php $avg = (float) $patient->avg_grade; @endphp
+                                        <span class="badge {{ $avg >= 5 ? 'badge-success' : 'badge-danger' }}">
+                                            {{ number_format($avg, 2) }} / 10
                                         </span>
                                     @else
-                                        <span class="text-muted text-sm">Pendiente</span>
+                                        <span class="text-muted text-sm">—</span>
                                     @endif
                                 </td>
-                                <td class="text-muted text-sm">{{ $attempt->submitted_at->diffForHumans() }}</td>
+
+                                {{-- Botón de acción --}}
                                 <td class="actions">
-                                    <a href="{{ route('teacher.results.show', $attempt) }}"
-                                       class="btn-action" title="{{ $attempt->final_score !== null ? 'Ver resultado' : 'Corregir' }}">
-                                        <i data-lucide="{{ $attempt->final_score !== null ? 'eye' : 'pencil' }}"></i>
+                                    {{-- Aquí irá el enlace al detalle del paciente (próximamente) --}}
+                                    <a href="{{ route('teacher.results.patient', $patient) }}" class="btn-action"
+                                        title="Ver detalle">
+                                        <i data-lucide="eye"></i>
                                     </a>
+
                                 </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
-            @if($attempts->hasPages())
-                <div class="card-footer">
-                    {{ $attempts->links() }}
-                </div>
-            @endif
         @endif
     </div>
 

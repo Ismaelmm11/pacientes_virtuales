@@ -70,8 +70,8 @@
                             <th>Asignatura</th>
                             <th>Nota</th>
                             <th>Calificación</th>
-                            <th>Estado</th>
                             <th>Fecha</th>
+                            <th class="actions">Detalle</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -84,42 +84,32 @@
                                 <td>
                                     <span class="text-muted text-sm">{{ $attempt->patient?->subject?->name ?? '—' }}</span>
                                 </td>
+                                {{-- Nota: solo el número --}}
                                 <td>
-                                    <span
-                                        class="badge {{ $score >= 70 ? 'badge-success' : ($score >= 50 ? 'badge-warning' : 'badge-danger') }}"
-                                        style="font-size: 0.9rem; font-weight: 700;">
-                                        {{ number_format($score, 1) }}
+                                    <span class="text-sm" style="font-weight: 600;">
+                                        {{ number_format($score, 2) }} / 10
                                     </span>
                                 </td>
+
+                                {{-- Calificación: badge de color --}}
                                 <td>
-                                    @if($attempt->final_score !== null)
-                                        @php $score = (float) $attempt->final_score; @endphp
-                                        <span
-                                            class="badge {{ $score >= 70 ? 'badge-success' : ($score >= 50 ? 'badge-warning' : 'badge-danger') }}"
-                                            style="font-size: 0.9rem; font-weight: 700;">
-                                            {{ number_format($score, 1) }}
-                                        </span>
-                                    @else
-                                        <span class="badge badge-neutral">Pendiente</span>
-                                    @endif
+                                    <span class="badge {{ $score >= 5 ? 'badge-success' : 'badge-danger' }}">
+                                        {{ $score >= 9 ? 'Sobresaliente' : ($score >= 7 ? 'Notable' : ($score >= 5 ? 'Aprobado' : 'Suspenso')) }}
+                                    </span>
                                 </td>
-                                <td>
-                                    @if($attempt->final_score !== null)
-                                        @php $score = (float) $attempt->final_score; @endphp
-                                        @if($score >= 90) <span class="text-sm"
-                                            style="color:#2BA88A;font-weight:600">Sobresaliente</span>
-                                        @elseif($score >= 70) <span class="text-sm" style="color:#2BA88A">Notable</span>
-                                        @elseif($score >= 50) <span class="text-sm" style="color:#C07D0A">Aprobado</span>
-                                        @else <span class="text-sm" style="color:var(--color-danger)">Suspenso</span>
-                                        @endif
-                                    @else
-                                        <span class="text-muted text-sm">En revisión</span>
-                                    @endif
-                                </td>
+
+
 
                                 <td class="text-muted text-sm">
                                     {{ $attempt->created_at->format('d/m/Y H:i') }}
                                 </td>
+                                <td class="actions">
+                                    <a href="{{ route('student.results.show', $attempt) }}" class="btn-action"
+                                        title="Ver detalle">
+                                        <i data-lucide="eye"></i>
+                                    </a>
+                                </td>
+
                             </tr>
                         @endforeach
                     </tbody>

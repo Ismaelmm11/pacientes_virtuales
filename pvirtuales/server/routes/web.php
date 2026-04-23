@@ -11,7 +11,10 @@ use App\Http\Controllers\Student\StudentDashboardController;
 use App\Http\Controllers\Simulation\SimulationController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\Teacher\SubjectController;
-
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminSubjectController;
+use App\Http\Controllers\Admin\AdminPatientController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes — SimulAI
@@ -44,7 +47,7 @@ Route::get('/', function () {
     }
 
     return match (true) {
-        auth()->user()->isAdmin() => redirect()->route('teacher.dashboard'), // admin usa teacher por ahora
+        auth()->user()->isAdmin() => redirect()->route('admin.dashboard'),
         auth()->user()->isTeacher() => redirect()->route('teacher.dashboard'),
         default => redirect()->route('student.dashboard'), // alumno pendiente
     };
@@ -78,16 +81,37 @@ Route::middleware(['auth'])->group(function () {
    Middleware: auth + role.admin
    ==================================================================== */
 
-// Route::middleware(['auth', 'role.admin'])
-//     ->prefix('admin')
-//     ->name('admin.')
-//     ->group(function () {
-//         Route::get('/dashboard', fn() => view('pages.admin.dashboard'))->name('dashboard');
-//         Route::get('/usuarios', fn() => view('pages.admin.users.index'))->name('users.index');
-//         Route::get('/asignaturas', fn() => view('pages.admin.subjects.index'))->name('subjects.index');
-//         Route::get('/pacientes', fn() => view('pages.admin.patients.index'))->name('patients.index');
-//         Route::get('/consultas', fn() => view('pages.admin.consultations.index'))->name('consultations.index');
-//     });
+Route::middleware(['auth', 'role.admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        // Las rutas para gestión de usuarios:
+        Route::get('/usuarios', [AdminUserController::class, 'index'])->name('users.index');
+        Route::delete('/usuarios/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+        Route::get('/usuarios/{user}', [AdminUserController::class, 'show'])->name('users.show');
+        Route::patch('/usuarios/{user}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::delete('/usuarios/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+        Route::post('/usuarios', [AdminUserController::class, 'store'])->name('users.store');
+        // Las rutas para gestión de asignaturas:
+        Route::get('/asignaturas',           [AdminSubjectController::class, 'index'])  ->name('subjects.index');
+        Route::get('/asignaturas/{subject}', [AdminSubjectController::class, 'show'])   ->name('subjects.show');
+        Route::patch('/asignaturas/{subject}',[AdminSubjectController::class, 'update'])->name('subjects.update');
+        Route::delete('/asignaturas/{subject}',[AdminSubjectController::class,'destroy'])->name('subjects.destroy');
+        Route::post('/asignaturas', [AdminSubjectController::class, 'store'])->name('subjects.store');
+
+        // Las rutas para gestión de pacientes:
+        Route::get('/pacientes',            [AdminPatientController::class, 'index'])  ->name('patients.index');
+        Route::delete('/pacientes/{patient}',[AdminPatientController::class, 'destroy'])->name('patients.destroy');
+
+
+        // Route::get('/asignaturas', ...)->name('subjects.index');
+        // Route::get('/pacientes', ...)->name('patients.index');
+        // Route::get('/analiticas', ...)->name('analytics');
+        // Route::get('/configuracion-ia', ...)->name('ai-config');
+        // Route::get('/juez-ia', ...)->name('ai-judge');
+    });
+
 
 /* ====================================================================
    5. PROFESOR
@@ -159,6 +183,15 @@ Route::middleware(['auth', 'role.teacher'])
             Route::delete('/{patient}/test/{question}', [QuestionController::class, 'destroy'])->name('test.destroy');
             Route::put('/{patient}/test/{question}', [QuestionController::class, 'update'])->name('test.update');
 
+
+            // Publicar resultados (visible para alumnos)
+            Route::post('/{patient}/publicar-resultados', [TeacherFollowupController::class, 'publishResults'])
+                ->name('publish-results');
+
+            // Despublicar resultados (cierra visibilidad y reabre el paciente)
+            Route::post('/{patient}/despublicar-resultados', [TeacherFollowupController::class, 'unpublishResults'])
+                ->name('unpublish-results');
+
         });
 
         // --- Seguimiento ---
@@ -168,9 +201,14 @@ Route::middleware(['auth', 'role.teacher'])
 
         Route::prefix('resultados')->name('results.')->group(function () {
             Route::get('/', [TeacherFollowupController::class, 'results'])->name('index');
+            Route::get('/paciente/{patient}', [TeacherFollowupController::class, 'showPatientResults'])->name('patient'); // <-- nueva
             Route::get('/{attempt}', [TeacherFollowupController::class, 'showResult'])->name('show');
             Route::post('/{attempt}/calificar', [TeacherFollowupController::class, 'grade'])->name('grade');
+            // Nueva ruta: corrige una sola respuesta abierta vía AJAX, sin recargar la página
+            Route::post('/{attempt}/calificar/{answer}', [TeacherFollowupController::class, 'gradeAnswer'])->name('grade-answer');
         });
+
+
 
     });
 
@@ -192,6 +230,7 @@ Route::middleware(['auth', 'role.student'])
         Route::get('/asignaturas', [StudentDashboardController::class, 'subjects'])->name('subjects.index');
         Route::get('/consultas', [StudentDashboardController::class, 'consultations'])->name('consultations.index');
         Route::get('/resultados', [StudentDashboardController::class, 'results'])->name('results.index');
+        Route::get('/resultados/{attempt}', [StudentDashboardController::class, 'showResult'])->name('results.show');
 
 
     });

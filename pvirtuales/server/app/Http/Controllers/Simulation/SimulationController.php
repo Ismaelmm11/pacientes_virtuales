@@ -30,7 +30,7 @@ class SimulationController extends Controller
      * @param string $aiModel Clave del proveedor de IA (openai, claude, gemini, etc.)
      * @param int $patientId ID del paciente virtual
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
-     */ 
+     */
     public function start(string $aiModel, int $patientId)
     {
         $patient = Patient::with(['knowledgeBase'])->findOrFail($patientId);
@@ -95,7 +95,7 @@ class SimulationController extends Controller
         // Los profesores no generan registros; usan la simulación para probar
         if (!$user->isTeacher() && !$user->isAdmin()) {
             $attempt = \App\Models\TestAttempt::create([
-                'user_id'    => $user->id,
+                'user_id' => $user->id,
                 'patient_id' => $patient->id,
             ]);
             Session::put('current_attempt_id', $attempt->id);
@@ -142,15 +142,31 @@ class SimulationController extends Controller
             ], 419);
         }
 
-        // Añadir el mensaje del usuario al historial
-        $history[] = ['role' => 'user', 'content' => $request->input('message')];
+        $userMessage = $request->input('message');
+        $isFarewell = $request->boolean('is_farewell', false);
+
+        // Guardar en sesión el mensaje limpio (sin instrucciones internas)
+        $history[] = ['role' => 'user', 'content' => $userMessage];
+
+        // Si es despedida, construir un historial temporal con wrapper de contexto solo para esta llamada
+        if ($isFarewell) {
+            $farewellNote = implode("\n", [
+                "[NOTA DE SISTEMA — NO LEER EN VOZ ALTA: El estudiante está cerrando la consulta con el siguiente mensaje.",
+                "Responde como el paciente se despide de forma natural, acorde a tu personalidad.",
+                "No inicies nuevos temas clínicos. Puedes incluir gestos finales entre corchetes si aportan expresividad al cierre.]",
+                "",
+                $userMessage,
+            ]);
+            $historyForAI = array_slice($history, 0, -1);
+            $historyForAI[] = ['role' => 'user', 'content' => $farewellNote];
+        } else {
+            $historyForAI = $history;
+        }
 
         try {
-            // Enviar el historial completo a la IA y obtener la respuesta
             $aiService = AIFactory::create($aiModel);
-            $aiResponse = $aiService->sendMessage($history);
+            $aiResponse = $aiService->sendMessage($historyForAI);
 
-            // Añadir la respuesta al historial y guardar en sesión
             $history[] = ['role' => 'assistant', 'content' => $aiResponse];
             Session::put('chat_history', $history);
 

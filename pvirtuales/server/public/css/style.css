@@ -75,7 +75,7 @@
     --sidebar-accent:       #5BE7C4; /* Indicador lateral del item activo */
 
     /* --- Topbar --- */
-    --topbar-height: 64px;   /* Altura fija de la barra superior */
+    --topbar-height: 84px;   /* Altura fija de la barra superior */
 
     /* --- Espaciado --- */
     --spacing-xs:  4px;

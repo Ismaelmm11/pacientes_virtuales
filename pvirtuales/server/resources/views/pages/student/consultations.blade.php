@@ -114,18 +114,15 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($isGraded)
-                                        @php $score = $attempt->final_score @endphp
-                                        <span
-                                            class="badge {{ $score >= 70 ? 'badge-success' : ($score >= 50 ? 'badge-warning' : 'badge-danger') }}">
-                                            {{ number_format($score, 1) }}
-                                        </span>
-                                    @elseif($awaitingGrade)
-                                        <span class="text-muted text-sm">En revisión</span>
-                                    @else
-                                        <span class="text-muted text-sm">—</span>
+                                    @if($attempt->submitted_at)
+                                        @if($attempt->patient->results_published && $attempt->final_score !== null)
+                                            {{-- Resultados publicados: mostrar nota --}}
+                                            <span>{{ number_format($attempt->final_score, 1) }} / 10</span>
+                                        @elseif($attempt->submitted_at)
+                                            {{-- Test enviado pero resultados no publicados aún --}}
+                                            <span class="text-muted">Pendiente de publicación</span>
+                                        @endif
                                     @endif
-
                                 </td>
                                 <td class="actions">
                                     @if($isPending && $attempt->patient?->hasTest())

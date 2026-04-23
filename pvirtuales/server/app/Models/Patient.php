@@ -45,6 +45,7 @@ class Patient extends Model
         'questions_per_test',
         'randomize_questions',
         'randomize_order',
+        'results_published', // Controla si los alumnos pueden ver sus notas
     ];
 
     protected $casts = [
@@ -53,6 +54,7 @@ class Patient extends Model
         'created_at' => 'datetime',
         'randomize_questions' => 'boolean',
         'randomize_order' => 'boolean',
+        'results_published' => 'boolean',
     ];
 
     /* -----------------------------------------------------------------
@@ -115,6 +117,19 @@ class Patient extends Model
     {
         return $this->hasMany(ExtraInformation::class)->orderBy('info_order');
     }
+
+    /** Intentos de simulación realizados sobre este paciente. */
+    public function testAttempts()
+    {
+        return $this->hasMany(TestAttempt::class);
+    }
+
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
 
     /**
      * Valida si la config aleatoria del test es coherente con las preguntas actuales.

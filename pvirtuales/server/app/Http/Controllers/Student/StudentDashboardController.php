@@ -47,10 +47,19 @@ class StudentDashboardController extends Controller
         // Total de simulaciones realizadas (independientemente de si tienen nota o no)
         $simulationsCount = TestAttempt::where('user_id', $userId)->count();
 
-        // Nota media entre todos los tests que ha completado (pueden ser null si no ha hecho ninguno)
+        // Solo promedio de resultados que el alumno puede ver
         $avgGrade = TestAttempt::where('user_id', $userId)
             ->whereNotNull('final_score')
             ->avg('final_score');
+
+        // Solo los últimos resultados publicados
+        $completedTests = TestAttempt::with(['patient.subject'])
+            ->where('user_id', $userId)
+            ->whereNotNull('submitted_at')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
 
         // --- Pacientes disponibles para practicar ---
         // Publicados en sus asignaturas y con al menos un intento restante
@@ -87,16 +96,6 @@ class StudentDashboardController extends Controller
             ->get()
             ->unique('patient_id')
             ->values();
-
-
-        // --- Resultados completados ---
-        // Últimos 5 tests con nota final asignada
-        $completedTests = TestAttempt::with(['patient.subject'])
-            ->where('user_id', $userId)
-            ->whereNotNull('submitted_at')
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
 
         // --- Asignaturas matriculadas ---
         // Con conteo de pacientes publicados por asignatura para mostrar en la tabla
@@ -173,7 +172,7 @@ class StudentDashboardController extends Controller
         $user = Auth::user();
         $userId = Auth::id();
 
-         $completedTests = TestAttempt::with(['patient.subject'])
+        $completedTests = TestAttempt::with(['patient.subject'])
             ->where('user_id', $userId)
             ->whereNotNull('submitted_at')
             ->orderBy('created_at', 'desc')
@@ -223,8 +222,8 @@ class StudentDashboardController extends Controller
             ->get();
 
         $totalCount = $attempts->count();
-        $pendingCount   = $attempts->whereNull('submitted_at')->whereNotNull('interview_transcript')->count();
-        $gradingCount   = $attempts->whereNotNull('submitted_at')->whereNull('final_score')->count();
+        $pendingCount = $attempts->whereNull('submitted_at')->whereNotNull('interview_transcript')->count();
+        $gradingCount = $attempts->whereNotNull('submitted_at')->whereNull('final_score')->count();
         $completedCount = $attempts->whereNotNull('final_score')->count();
 
         return view('pages.student.consultations', compact(
@@ -246,13 +245,18 @@ class StudentDashboardController extends Controller
         $completedTests = TestAttempt::with(['patient.subject'])
             ->where('user_id', $userId)
             ->whereNotNull('submitted_at')
+            // Solo mostrar si el profesor ha publicado los resultados de ese paciente
+            // Práctica: siempre visible. Examen: solo si el profesor publicó
+            ->whereHas('patient', fn($q) => $q->where('results_published', true))
             ->orderBy('created_at', 'desc')
             ->get();
 
 
+
         $avgGrade = $completedTests->avg('final_score');
         $bestGrade = $completedTests->max('final_score');
-        $passCount = $completedTests->where('final_score', '>=', 50)->count();
+        // Después:
+        $passCount = $completedTests->where('final_score', '>=', 5)->count();
         $total = $completedTests->count();
 
         return view('pages.student.results', compact(
@@ -263,5 +267,39 @@ class StudentDashboardController extends Controller
             'total'
         ));
     }
+
+    public function showResult(TestAttempt $attempt)
+    {
+        // Solo el propio alumno puede ver su intento
+        if ($attempt->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Exámenes: solo visibles cuando el profesor haya publicado los resultados
+        if (!$attempt->patient->results_published) {
+            abort(403, 'Los resultados de este paciente aún no han sido publicados.');
+        }
+
+        $attempt->load(['patient.subject', 'answers.question']);
+
+        $durationMinutes = $attempt->created_at && $attempt->submitted_at
+            ? (int) $attempt->created_at->diffInMinutes($attempt->submitted_at)
+            : null;
+
+        $transcript = $attempt->interview_transcript ?? [];
+        $studentMessages = collect($transcript)->where('role', 'user')->count();
+
+        $correctCount = $attempt->answers->where('is_correct', 1)->count();
+        $totalAnswered = $attempt->answers->count();
+
+        return view('pages.student.results.show', compact(
+            'attempt',
+            'durationMinutes',
+            'studentMessages',
+            'correctCount',
+            'totalAnswered',
+        ));
+    }
+
 
 }

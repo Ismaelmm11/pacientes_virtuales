@@ -65,10 +65,18 @@
                         Dashboard
                     </a>
                 @endif
+
+                @if(Route::has('admin.analytics'))
+                    <a href="{{ route('admin.analytics') }}"
+                        class="sidebar-nav-item {{ request()->routeIs('admin.analytics') ? 'active' : '' }}">
+                        <i data-lucide="bar-chart-3"></i>
+                        Analíticas
+                    </a>
+                @endif
             </div>
 
             <div class="sidebar-nav-group">
-                <div class="sidebar-nav-group-title">Gestión</div>
+                <div class="sidebar-nav-group-title">Plataforma</div>
 
                 @if(Route::has('admin.users.index'))
                     <a href="{{ route('admin.users.index') }}"
@@ -96,16 +104,25 @@
             </div>
 
             <div class="sidebar-nav-group">
-                <div class="sidebar-nav-group-title">Resultados</div>
+                <div class="sidebar-nav-group-title">Sistema</div>
 
-                @if(Route::has('admin.consultations.index'))
-                    <a href="{{ route('admin.consultations.index') }}"
-                        class="sidebar-nav-item {{ request()->routeIs('admin.consultations.*') ? 'active' : '' }}">
-                        <i data-lucide="message-square"></i>
-                        Consultas
+                @if(Route::has('admin.ai-config'))
+                    <a href="{{ route('admin.ai-config') }}"
+                        class="sidebar-nav-item {{ request()->routeIs('admin.ai-config') ? 'active' : '' }}">
+                        <i data-lucide="cpu"></i>
+                        Config IA
+                    </a>
+                @endif
+
+                @if(Route::has('admin.ai-judge'))
+                    <a href="{{ route('admin.ai-judge') }}"
+                        class="sidebar-nav-item {{ request()->routeIs('admin.ai-judge') ? 'active' : '' }}">
+                        <i data-lucide="scale"></i>
+                        Juez IA
                     </a>
                 @endif
             </div>
+
 
             {{-- -----------------------------------------------
             PROFESOR

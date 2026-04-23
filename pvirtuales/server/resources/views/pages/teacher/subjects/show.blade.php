@@ -135,7 +135,7 @@
                                         @endif
 
                                         {{-- Eliminar --}}
-                                        <<form action="{{ route('teacher.patients.destroy', [$patient, 'show']) }}"
+                                        <form action="{{ route('teacher.patients.destroy', [$patient, 'show']) }}"
                                             method="POST" style="display: inline;"
                                             onsubmit="return confirm('¿Eliminar este paciente? Esta acción no se puede deshacer.')">
                                             @csrf

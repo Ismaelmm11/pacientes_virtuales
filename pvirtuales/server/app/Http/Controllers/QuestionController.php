@@ -142,7 +142,7 @@ class QuestionController extends Controller
      */
     private function authorizeOwnership(Patient $patient): void
     {
-        if ($patient->created_by_user_id !== Auth::id()) {
+        if ($patient->created_by_user_id !== Auth::id() && !Auth::user()->isAdmin()) {
             abort(403, 'No tienes permiso para gestionar este paciente.');
         }
     }

@@ -12,9 +12,11 @@
     <x-slot name="title">Cuestionario — {{ $patient->case_title }}</x-slot>
 
     <x-slot name="styles">
-        <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
-        <link href="{{ asset('css/modal.css') }}" rel="stylesheet">
-    </x-slot>
+    <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/modal.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/patient-test-take.css') }}" rel="stylesheet">   {{-- añadir --}}
+</x-slot>
+
 
     <x-slot name="topbar">
         <div class="topbar">

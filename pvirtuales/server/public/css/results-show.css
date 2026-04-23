@@ -1,0 +1,549 @@
+/* =============================================================================
+ * results-show.css
+ * Estilos para la página de corrección de un intento (teacher.results.show)
+ * ============================================================================= */
+
+/* --------------------------------------------------------------------------
+ * Lista de tarjetas de preguntas
+ * -------------------------------------------------------------------------- */
+
+.questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+ * Tarjeta de pregunta individual
+ * -------------------------------------------------------------------------- */
+
+.question-card {
+    background: var(--color-card-bg, #ffffff);
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Cabecera: tipo (izquierda) + estado (derecha) */
+.question-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+
+/* Badge de tipo (MULTIPLE, V/F, ABIERTA) */
+.q-type-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #6b7280);
+}
+
+/* Badge de estado */
+.q-status {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+.q-status.correct {
+    background: rgba(22, 163, 74, 0.12);
+    color: #16a34a;
+}
+.q-status.warning {
+    background: rgba(234, 88, 12, 0.12);
+    color: #ea580c;
+}
+.q-status.incorrect {
+    background: rgba(220, 38, 38, 0.12);
+    color: #dc2626;
+}
+.q-status.pending {
+    background: rgba(234, 179, 8, 0.12);
+    color: #ca8a04;
+}
+
+/* Cuerpo de la tarjeta */
+.question-card-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Enunciado */
+.question-card-text {
+    font-size: 0.97rem;
+    font-weight: 700;
+    color: var(--color-text, #111827);
+    line-height: 1.45;
+}
+
+/* --------------------------------------------------------------------------
+ * Opciones (Opción múltiple y V/F)
+ * -------------------------------------------------------------------------- */
+
+.question-options {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.option-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 13px;
+    border-radius: 8px;
+    background: var(--color-bg-secondary, #f9fafb);
+    border: 1px solid transparent;
+}
+
+/* Opción correcta */
+.option-item.is-correct {
+    background: rgba(22, 163, 74, 0.1);
+    border-color: rgba(22, 163, 74, 0.25);
+}
+
+/* Opción elegida por el alumno incorrectamente */
+.option-item.is-student-wrong {
+    background: rgba(220, 38, 38, 0.08);
+    border-color: rgba(220, 38, 38, 0.25);
+}
+
+/* Punto indicador */
+.option-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--color-border, #d1d5db);
+    flex-shrink: 0;
+}
+.option-item.is-correct .option-dot {
+    background: #16a34a;
+}
+.option-item.is-student-wrong .option-dot {
+    background: #dc2626;
+}
+
+/* Texto de la opción */
+.option-text {
+    font-size: 0.88rem;
+    color: var(--color-text, #374151);
+    flex: 1;
+}
+.option-item.is-correct .option-text {
+    font-weight: 600;
+    color: #15803d;
+}
+.option-item.is-student-wrong .option-text {
+    color: #b91c1c;
+}
+
+/* Etiqueta "Respuesta del alumno" en la opción incorrecta */
+.option-student-tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #b91c1c;
+    white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+ * Caja de feedback de la pregunta (el configurado al crear)
+ * -------------------------------------------------------------------------- */
+
+.question-feedback-box {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    color: var(--color-text, #374151);
+    background: rgba(99, 102, 241, 0.06);
+    border-left: 3px solid rgba(99, 102, 241, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+ * Respuesta de texto libre (OPEN_ENDED: lo que escribió el alumno)
+ * -------------------------------------------------------------------------- */
+
+.student-open-answer {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--color-text, #374151);
+    background: var(--color-bg-secondary, #f9fafb);
+    border: 1px solid var(--color-border, #e5e7eb);
+}
+
+/* --------------------------------------------------------------------------
+ * Corrección de preguntas abiertas (slider + feedback)
+ * -------------------------------------------------------------------------- */
+
+.open-grading {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 4px;
+    border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+.open-grading-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted, #6b7280);
+}
+
+/* Slider + valor numérico */
+.score-slider-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.score-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--color-border, #e5e7eb);
+    outline: none;
+    cursor: pointer;
+}
+.score-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-primary, #6366f1);
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+.score-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-primary, #6366f1);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+/* Valor numérico junto al slider */
+.score-value-display {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-primary, #6366f1);
+    min-width: 64px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* Textarea de feedback del profesor para preguntas abiertas */
+.open-feedback-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+    background: var(--color-card-bg, #fff);
+    color: var(--color-text, #111827);
+    box-sizing: border-box;
+    transition:
+        border-color 0.15s,
+        box-shadow 0.15s;
+}
+.open-feedback-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary, #6366f1);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* --------------------------------------------------------------------------
+ * Sección de feedback general (final del formulario)
+ * -------------------------------------------------------------------------- */
+
+.general-feedback-section {
+    margin-top: 28px;
+    padding: 20px;
+    background: var(--color-card-bg, #ffffff);
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: 12px;
+}
+
+.general-feedback-section h3 {
+    font-size: 0.97rem;
+    font-weight: 700;
+    color: var(--color-text, #111827);
+    margin: 0 0 12px;
+}
+
+.general-feedback-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 110px;
+    font-family: inherit;
+    background: var(--color-card-bg, #fff);
+    color: var(--color-text, #111827);
+    box-sizing: border-box;
+    transition:
+        border-color 0.15s,
+        box-shadow 0.15s;
+}
+.general-feedback-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary, #6366f1);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Fila del botón guardar */
+.save-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-bottom: 40px;
+}
+
+/* --------------------------------------------------------------------------
+ * Sección de transcripción de la consulta (collapsible)
+ * -------------------------------------------------------------------------- */
+
+.transcript-details {
+    margin-top: 28px;
+    background: var(--color-card-bg, #ffffff);
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Cabecera clicable del <details> */
+.transcript-summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 16px 20px;
+    user-select: none;
+}
+/* Quitar el triángulo nativo del <summary> en todos los navegadores */
+.transcript-summary::-webkit-details-marker {
+    display: none;
+}
+
+.transcript-summary-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.transcript-summary-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.97rem;
+    font-weight: 700;
+    color: var(--color-text, #111827);
+}
+.transcript-summary-left i {
+    width: 18px;
+    height: 18px;
+    color: var(--color-text-muted, #6b7280);
+}
+
+.transcript-summary-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Badge con el nº de mensajes */
+.transcript-count {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-text-muted, #6b7280);
+    background: var(--color-bg-secondary, #f3f4f6);
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+/* Flecha que rota al abrir */
+.transcript-chevron {
+    width: 18px;
+    height: 18px;
+    color: var(--color-text-muted, #6b7280);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+.transcript-details[open] .transcript-chevron {
+    transform: rotate(180deg);
+}
+
+/* Separador entre summary y mensajes cuando está abierto */
+.transcript-details[open] .transcript-summary {
+    border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+
+/* Contenedor de mensajes */
+.transcript-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 520px;
+    overflow-y: auto;
+}
+
+/* Estado vacío */
+.transcript-empty {
+    text-align: center;
+    color: var(--color-text-muted, #6b7280);
+    font-size: 0.9rem;
+    padding: 20px 0;
+}
+
+/* --------------------------------------------------------------------------
+ * Burbujas de chat
+ * -------------------------------------------------------------------------- */
+
+.chat-message {
+    display: flex;
+    max-width: 78%;
+}
+
+/* Alumno → derecha */
+.chat-message-student {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+/* Paciente → izquierda */
+.chat-message-patient {
+    align-self: flex-start;
+}
+
+/* Burbuja */
+.chat-bubble {
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    line-height: 1.55;
+}
+
+.chat-message-student .chat-bubble {
+    background: var(--color-primary, #6366f1);
+    color: #ffffff;
+    border-bottom-right-radius: 3px;
+}
+
+.chat-message-patient .chat-bubble {
+    background: var(--color-bg-secondary, #f3f4f6);
+    color: var(--color-text, #374151);
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-bottom-left-radius: 3px;
+}
+
+/* Etiqueta del emisor encima de la burbuja */
+.chat-role-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+    opacity: 0.75;
+}
+
+/* Texto del mensaje */
+.chat-content {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.progress-ring {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: conic-gradient(
+        var(--color-primary) calc(var(--pct) * 1%),
+        #e5e7eb calc(var(--pct) * 1%)
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.progress-ring-inner {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: white;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.stat-card-icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+.chart-pill {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--color-border, #e5e7eb);
+    background: var(--color-bg-secondary, #f9fafb);
+    color: var(--color-text-muted, #6b7280);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.chart-pill:hover {
+    border-color: var(--color-primary, #6366f1);
+    color: var(--color-primary, #6366f1);
+}
+.chart-pill.active {
+    background: var(--color-primary, #6366f1);
+    border-color: var(--color-primary, #6366f1);
+    color: #ffffff;
+}
+.chart-meta {
+    padding: 14px 20px 4px;
+}
+.chart-meta-title {
+    font-size: 0.97rem;
+    font-weight: 700;
+    color: var(--color-text, #111827);
+}
+.chart-meta-desc {
+    font-size: 0.82rem;
+    color: var(--color-text-muted, #6b7280);
+    margin-top: 3px;
+}
+#analytics-chart {
+    padding: 4px 12px 20px;
+    min-height: 380px;
+}

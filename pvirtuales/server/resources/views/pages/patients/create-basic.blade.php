@@ -7,11 +7,11 @@
 | Organiza las 5 secciones modulares y gestiona el envío al controlador.
 |
 | SECCIONES:
-|   1. section-case        → Título, descripción y objetivos del caso
-|   2. section-identity    → Identidad del paciente o acompañante
-|   3. section-clinical    → Consulta, síntomas, medicación, diagnóstico
-|   4. section-personality → Personalidad, verbosidad, conocimiento médico
-|   5. section-extra       → Instrucciones especiales, frases límite
+| 1. section-case → Título, descripción y objetivos del caso
+| 2. section-identity → Identidad del paciente o acompañante
+| 3. section-clinical → Consulta, síntomas, medicación, diagnóstico
+| 4. section-personality → Personalidad, verbosidad, conocimiento médico
+| 5. section-extra → Instrucciones especiales, frases límite
 |
 --}}
 <x-layouts.app>
@@ -22,6 +22,7 @@
 
     <x-slot name="styles">
         <link href="{{ asset('css/create-patient.css') }}" rel="stylesheet">
+        <link rel="stylesheet" href="{{ asset('css/modal.css') }}">
     </x-slot>
 
     <x-slot name="topbar">
@@ -36,13 +37,9 @@
                 </div>
             </div>
             <div class="topbar-right">
-                <a href="{{ route('teacher.patients.create') }}" class="btn btn-ghost btn-sm">
+                <a href="{{ route('teacher.patients.create') }}?origen=admin" class="btn btn-ghost btn-sm">
                     <i data-lucide="arrow-left"></i>
                     Cambiar modo
-                </a>
-                <a href="{{ route('teacher.patients.index') }}" class="btn btn-ghost btn-sm">
-                    <i data-lucide="x"></i>
-                    Cancelar
                 </a>
             </div>
         </div>
@@ -83,7 +80,7 @@
 
                 {{-- Botonera --}}
                 <div class="cp-form-actions">
-                    <a href="{{ route('teacher.patients.index') }}" class="btn btn-ghost">
+                    <a href="{{ route('teacher.patients.create') }}?origen=admin" class="btn btn-ghost">
                         Cancelar
                     </a>
                     <button type="submit" class="btn btn-primary btn-lg">
@@ -138,33 +135,50 @@
 
     </div>
 
+    {{-- Modal de confirmación al quitar texto personalizado --}}
+    <div class="sim-modal-overlay" id="customTextModal">
+        <div class="sim-modal">
+            <div class="sim-modal-icon" style="background: rgba(231,76,60,0.12); color: var(--color-danger);">
+                <i data-lucide="alert-triangle" style="width:26px;height:26px;"></i>
+            </div>
+            <div class="sim-modal-title">¿Volver al texto automático?</div>
+            <p class="sim-modal-body">Se perderá el texto personalizado que has escrito. Esta acción no se puede
+                deshacer.</p>
+            <div class="sim-modal-actions">
+                <button class="btn btn-ghost btn-sm" onclick="closeCustomTextModal()">Cancelar</button>
+                <button class="btn btn-primary btn-sm" id="btnConfirmCustomText">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+
     <x-slot name="scripts">
         <script src="{{ asset('js/create-patient-basic.js') }}"></script>
         {{-- Scroll activo en el sidebar según la sección visible --}}
         <script>
-        (function () {
-            const links = document.querySelectorAll('.cp-sidebar-link');
-            const sections = document.querySelectorAll('.cp-section');
+            (function () {
+                const links = document.querySelectorAll('.cp-sidebar-link');
+                const sections = document.querySelectorAll('.cp-section');
 
-            if (!sections.length) return;
+                if (!sections.length) return;
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        links.forEach(l => l.classList.remove('active'));
-                        const active = document.querySelector(`.cp-sidebar-link[href="#${entry.target.id}"]`);
-                        if (active) active.classList.add('active');
-                    }
-                });
-            }, { threshold: 0.3 });
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            links.forEach(l => l.classList.remove('active'));
+                            const active = document.querySelector(`.cp-sidebar-link[href="#${entry.target.id}"]`);
+                            if (active) active.classList.add('active');
+                        }
+                    });
+                }, { threshold: 0.3 });
 
-            sections.forEach(s => observer.observe(s));
+                sections.forEach(s => observer.observe(s));
 
-            // Scroll a errores si los hay
-            const errors = document.getElementById('validationErrors');
-            if (errors) errors.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        })();
+                // Scroll a errores si los hay
+                const errors = document.getElementById('validationErrors');
+                if (errors) errors.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            })();
         </script>
     </x-slot>
 
-</x-app-layout>
+    </x-app-layout>

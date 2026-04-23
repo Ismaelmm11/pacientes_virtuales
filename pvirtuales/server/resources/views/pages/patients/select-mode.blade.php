@@ -27,16 +27,24 @@
                 <div class="topbar-subtitle">Elige el modo de creación</div>
             </div>
             <div class="topbar-right">
-                {{-- DESPUÉS --}}
-                @php
-                    $backRoute = request('origen') === 'dashboard'
-                        ? route('teacher.dashboard')
-                        : route('teacher.patients.index');
+                @if(request('origen') !== 'admin')
+                    @php
+                        $backRoute = request('origen') === 'dashboard'
+                            ? route('teacher.dashboard')
+                            : route('teacher.patients.index');
 
-                    $backLabel = request('origen') === 'dashboard'
-                        ? 'Dashboard'
-                        : 'Mis Pacientes';
-                @endphp
+                        $backLabel = request('origen') === 'dashboard'
+                            ? 'Dashboard'
+                            : 'Mis Pacientes';
+                    @endphp
+                @else
+                    @php
+                        $backRoute = route('admin.patients.index');
+                        $backLabel = 'Volver a la lista de Pacientes';
+                    @endphp
+                @endif
+                {{-- DESPUÉS --}}
+
 
                 <a href="{{ $backRoute }}" class="btn btn-ghost btn-sm">
                     <i data-lucide="arrow-left"></i>
@@ -49,7 +57,7 @@
     <div class="mode-split">
 
         {{-- ===== MODO BÁSICO ===== --}}
-        <a href="{{ route('teacher.patients.create.basic') }}" class="mode-half mode-basic">
+        <a href="{{ route('teacher.patients.create.basic') }}{{ request('origen') ? '?origen=' . request('origen') : '' }}" class="mode-half mode-basic">
             <div class="mode-half-blob" aria-hidden="true"></div>
             <div class="mode-half-inner">
                 <div class="mode-half-tag">
@@ -79,7 +87,7 @@
         <div class="mode-divider"><span>o</span></div>
 
         {{-- ===== MODO AVANZADO ===== --}}
-        <a href="{{ route('teacher.patients.create.advanced') }}" class="mode-half mode-advanced">
+        <a href="#" class="mode-half mode-advanced">
             <div class="mode-half-blob" aria-hidden="true"></div>
             <div class="mode-half-inner">
                 <div class="mode-half-tag">

@@ -59,13 +59,14 @@ class PatientController extends Controller
      */
     public function createBasic()
     {
-        session()->forget('_old_input'); // <- añadir
-        $subjects = Subject::where('created_by_user_id', Auth::id())
-            ->orderBy('name')
-            ->get();
+        session()->forget('_old_input');
+        $subjects = Auth::user()->isAdmin()
+            ? Subject::orderBy('name')->get()
+            : Subject::where('created_by_user_id', Auth::id())->orderBy('name')->get();
 
         return view('pages.patients.create-basic', compact('subjects'));
     }
+
 
     /**
      * Muestra el formulario de creación en Modo Avanzado.
@@ -87,9 +88,10 @@ class PatientController extends Controller
             Auth::id()
         );
 
-        return redirect()
-            ->route('teacher.patients.preview', $patient)
-            ->with('success', 'Paciente creado exitosamente.');
+        $origen = request('origen');
+        $url = route('teacher.patients.preview', $patient) . ($origen ? '?origen=' . $origen : '');
+        return redirect($url)->with('success', 'Paciente creado exitosamente.');
+
     }
 
     /**
@@ -98,7 +100,7 @@ class PatientController extends Controller
      */
     public function preview(Patient $patient)
     {
-        if ($patient->created_by_user_id !== Auth::id()) {
+        if ($patient->created_by_user_id !== Auth::id() && !Auth::user()->isAdmin()) {
             abort(403, 'No tienes permiso para ver este paciente.');
         }
 
@@ -113,16 +115,18 @@ class PatientController extends Controller
      */
     public function publish(Patient $patient)
     {
-        if ($patient->created_by_user_id !== Auth::id()) {
+        if ($patient->created_by_user_id !== Auth::id() && !Auth::user()->isAdmin()) {
             abort(403);
         }
+
+        $origen = request('origen');
 
         // DESPUBLICAR — sin validaciones
         if ($patient->is_published) {
             $patient->update(['is_published' => false]);
-            return redirect()
-                ->route('teacher.patients.preview', $patient)
-                ->with('success', 'Paciente despublicado. Ya no está disponible para consultas.');
+            $url = route('teacher.patients.preview', $patient) . ($origen ? '?origen=' . $origen : '');
+            return redirect($url)->with('success', 'Paciente despublicado. Ya no está disponible para consultas.');
+
         }
 
         // PUBLICAR — con validaciones existentes
@@ -132,34 +136,24 @@ class PatientController extends Controller
                 ->with('error', 'Debes crear al menos 1 pregunta en el test antes de publicar.');
         }
 
-        if ($patient->randomize_questions) {
-            $error = $patient->validateRandomConfig();
-            if ($error) {
-                return redirect()
-                    ->route('teacher.patients.test', $patient)
-                    ->with('error', $error);
-            }
-        }
-
         $patient->update(['is_published' => true]);
 
-        return redirect()
-            ->route('teacher.patients.preview', $patient)
-            ->with('success', 'Paciente publicado. Ya está disponible para consultas.');
+        $url = route('teacher.patients.preview', $patient) . ($origen ? '?origen=' . $origen : '');
+        return redirect($url)->with('success', 'Paciente publicado. Ya está disponible para consultas.');
     }
 
 
 
     public function edit(Patient $patient)
     {
-        if ($patient->created_by_user_id !== Auth::id())
+        if ($patient->created_by_user_id !== Auth::id() && !Auth::user()->isAdmin())
             abort(403);
 
         $patient->load(['identity', 'psychology', 'knowledgeBase', 'conversationLogic', 'coherenceExamples']);
 
-        $subjects = Subject::where('created_by_user_id', Auth::id())
-            ->orderBy('name')
-            ->get();
+        $subjects = Auth::user()->isAdmin()
+            ? Subject::orderBy('name')->get()
+            : Subject::where('created_by_user_id', Auth::id())->orderBy('name')->get();
 
         // Pre-rellena old() para que los partials funcionen sin cambios.
         session()->put('_old_input', $this->patientService->extractFormData($patient));
@@ -170,14 +164,15 @@ class PatientController extends Controller
 
     public function update(UpdatePatientRequest $request, Patient $patient)
     {
-        if ($patient->created_by_user_id !== Auth::id())
+        if ($patient->created_by_user_id !== Auth::id() && !Auth::user()->isAdmin())
             abort(403);
 
         $this->patientService->updatePatient($request->validated(), $patient);
 
-        return redirect()
-            ->route('teacher.patients.preview', $patient)
-            ->with('success', 'Paciente actualizado. El prompt ha sido regenerado.');
+        $origen = request('origen');
+        $url = route('teacher.patients.preview', $patient) . ($origen ? '?origen=' . $origen : '');
+        return redirect($url)->with('success', 'Paciente actualizado. El prompt ha sido regenerado.');
+
     }
 
 
@@ -187,7 +182,7 @@ class PatientController extends Controller
      */
     public function destroy(Patient $patient, $origen)
     {
-        if ($patient->created_by_user_id !== Auth::id()) {
+        if ($patient->created_by_user_id !== Auth::id() && !Auth::user()->isAdmin()) {
             abort(403);
         }
 

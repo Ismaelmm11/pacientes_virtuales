@@ -162,7 +162,7 @@ async function sendFarewell() {
                 "Content-Type": "application/json",
                 "X-CSRF-TOKEN": CHAT_CONFIG.csrfToken,
             },
-            body: JSON.stringify({ message: text }),
+            body: JSON.stringify({ message: text, is_farewell: true }),
         });
 
         const data = await response.json();

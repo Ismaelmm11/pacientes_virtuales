@@ -29,6 +29,7 @@ class TestAttempt extends Model
         'interview_transcript',
         'submitted_at',
         'final_score',
+        'general_feedback',
     ];
 
     protected $casts = [

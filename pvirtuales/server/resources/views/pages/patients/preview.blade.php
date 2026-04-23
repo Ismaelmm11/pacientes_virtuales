@@ -24,17 +24,29 @@
                 </div>
             </div>
             <div class="topbar-right">
-                <a href="{{ route('teacher.patients.index') }}" class="btn btn-ghost btn-sm">
-                    <i data-lucide="arrow-left"></i>
-                    Mis Pacientes
-                </a>
-                <a href="{{ route('teacher.patients.create') }}" class="btn btn-ghost btn-sm">
-                    <i data-lucide="plus"></i>
-                    Crear Otro
-                </a>
+                @if(request('origen') === 'admin')
+                    <a href="{{ route('admin.patients.index') }}" class="btn btn-ghost btn-sm">
+                        <i data-lucide="arrow-left"></i>
+                        Panel Admin
+                    </a>
+                @else
+                    <a href="{{ route('teacher.patients.index') }}" class="btn btn-ghost btn-sm">
+                        <i data-lucide="arrow-left"></i>
+                        Mis Pacientes
+                    </a>
+                @endif
+
+                @if(request('origen') !== 'admin')
+                    <a href="{{ route('teacher.patients.create') }}" class="btn btn-ghost btn-sm">
+                        <i data-lucide="plus"></i>
+                        Crear Otro
+                    </a>
+                @endif
+
                 @if(!$patient->is_published)
                     <form action="{{ route('teacher.patients.publish', $patient) }}" method="POST" class="cp-form-inline">
                         @csrf
+                        <input type="hidden" name="origen" value="{{ request('origen') }}">
                         <button type="submit" class="btn btn-primary btn-sm">
                             <i data-lucide="send"></i>
                             Publicar Paciente
@@ -43,30 +55,17 @@
                 @else
                     <form action="{{ route('teacher.patients.publish', $patient) }}" method="POST" class="cp-form-inline">
                         @csrf
+                        <input type="hidden" name="origen" value="{{ request('origen') }}">
                         <button type="submit" class="btn btn-ghost btn-sm">
                             <i data-lucide="eye-off"></i>
                             Despublicar
                         </button>
                     </form>
                 @endif
+
             </div>
         </div>
     </x-slot>
-
-    {{-- Errores de sesión --}}
-    @if(session('error'))
-        <div class="cp-alert-error">
-            <div class="cp-alert-icon"><i data-lucide="circle-alert"></i></div>
-            <div class="cp-alert-body">{{ session('error') }}</div>
-        </div>
-    @endif
-
-    @if(session('success'))
-        <div class="cp-alert-success">
-            <div class="cp-alert-success-icon"><i data-lucide="circle-check"></i></div>
-            <div class="cp-alert-success-text">{{ session('success') }}</div>
-        </div>
-    @endif
 
     <div class="create-patient-layout">
 
@@ -106,10 +105,12 @@
                         <div class="cp-section-icon"><i data-lucide="clipboard-list"></i></div>
                         <p class="cp-action-card-title">Cuestionario</p>
                     </div>
-                    <p class="cp-action-card-desc">Crea o edita las preguntas de evaluación. Necesitas al menos una para
+                    <p class="cp-action-card-desc">Crea o edita las preguntas de evaluación para este caso clínico.</p>
+
                         poder publicar.</p>
                     <div class="cp-action-card-footer">
-                        <a href="{{ route('teacher.patients.test', $patient) }}" class="btn btn-ghost btn-sm">
+                        <a href="{{ route('teacher.patients.test', $patient) }}{{ request('origen') ? '?origen=' . request('origen') : '' }}"
+                            class="btn btn-ghost btn-sm">
                             <i data-lucide="clipboard-list"></i>
                             Gestionar Preguntas
                         </a>
@@ -124,8 +125,8 @@
                     <p class="cp-action-card-desc">Modifica los datos del caso. El prompt se regenerará automáticamente
                         al guardar.</p>
                     <div class="cp-action-card-footer">
-                        <a href="{{ route('teacher.patients.edit', $patient) }}" class="btn btn-ghost btn-sm">
-
+                        <a href="{{ route('teacher.patients.edit', $patient) }}{{ request('origen') ? '?origen=' . request('origen') : '' }}"
+                            class="btn btn-ghost btn-sm">
                             <i data-lucide="pencil"></i>
                             Editar
                         </a>
@@ -234,10 +235,6 @@
                     <ol class="cp-next-steps-list">
                         <li>Revisa el prompt generado</li>
                         <li>Prueba la simulación</li>
-                        <li>
-                            Crea las preguntas del test
-
-                        </li>
                         <li>Publica el paciente</li>
                     </ol>
                 </div>

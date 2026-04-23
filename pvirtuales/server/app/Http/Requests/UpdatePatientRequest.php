@@ -24,6 +24,7 @@ class UpdatePatientRequest extends FormRequest
             'case_title' => 'required|string|max:255',
             'learning_objectives' => 'nullable|string|max:1000',
             'subject_id' => 'required|integer|exists:subjects,id',
+            'mode' => 'required|string|in:basic,advanced',
             'attendee_type' => 'required|string|in:patient,companion',
             'puede_inventar_datos_medicos' => 'nullable|boolean',
             // Campos del acompañante (requeridos solo si attendee_type=companion)
@@ -31,7 +32,7 @@ class UpdatePatientRequest extends FormRequest
             'companion_relation' => 'required_if:attendee_type,companion|nullable|string',
             'companion_age' => 'nullable|integer|min:14|max:100',
             'companion_gender' => 'nullable|string|in:masculino,femenino,otro',
-            'patient_description' => 'required|string|max:255',
+            'patient_description' => 'required|string|max:1000',
 
             // Identidad del paciente
             'patient_name' => 'required|string|max:150',
@@ -53,7 +54,8 @@ class UpdatePatientRequest extends FormRequest
             'frase_inicial' => 'required_if:mode,basic|nullable|string|max:1000',
             'motivo_consulta' => 'required_if:mode,basic|nullable|string|max:1000',
 
-            // Medicamentos
+            //Medicamentos
+
             'medications' => 'nullable|array',
             'medications.*.name' => 'nullable|string|max:200',
             'medications.*.dose' => 'nullable|string|max:200',
@@ -62,13 +64,16 @@ class UpdatePatientRequest extends FormRequest
             'medications.*.adherence_detail' => 'nullable|string|max:500',
             'medications.*.reveal' => 'nullable|string|in:espontaneo,pregunta,oculta,miente',
             'medications.*.lie_text' => 'nullable|string|max:300',
+
             // Vicios
             'vices' => 'nullable|array',
             'vices.*.name' => 'nullable|string|max:200',
             'vices.*.reveal' => 'nullable|string|in:espontaneo,pregunta,oculta,miente',
             'vices.*.lie_text' => 'nullable|string|max:300',
+
             // Antecedentes familiares
             'family_history' => 'nullable|string|max:2000',
+
 
             // Personalidad y comportamiento
             'personality_type' => 'required|string|in:colaborador,ansioso,reservado,demandante,minimizador,hipocondriaco,agresivo,deprimido,desconfiado,confuso,evasivo',
@@ -79,14 +84,15 @@ class UpdatePatientRequest extends FormRequest
 
             // Configuración adicional
             'special_instructions' => 'nullable|string|max:2000',
-            'frases_limite' => 'required|array|max:5',
+            'frases_limite' => 'required|array|min:1|max:5',
             'frases_limite.*' => 'required|string|max:200',
             'ejemplo_coherencia' => 'required|array',
             'ejemplo_coherencia.pregunta' => 'required|string|max:300',
             'ejemplo_coherencia.coherente' => 'required|string|max:300',
             'ejemplo_coherencia.incoherente' => 'required|string|max:300',
-            'verbosity_custom' => 'nullable|string|max:500',
-            'knowledge_custom' => 'nullable|string|max:500',
+            'personality_custom' => 'nullable|string|max:1000',
+            'verbosity_custom' => 'nullable|string|max:1000',
+            'knowledge_custom' => 'nullable|string|max:1000',
         ];
     }
 
@@ -122,7 +128,7 @@ class UpdatePatientRequest extends FormRequest
             'current_medications.max' => 'La medicación actual no puede exceder 1000 caracteres.',
             'real_diagnosis.required' => 'El diagnóstico real es obligatorio.',
             'real_diagnosis.max' => 'El diagnóstico no puede exceder 300 caracteres.',
-            
+
             // Personalidad
             'personality_type.required' => 'Debes seleccionar un tipo de personalidad.',
             'personality_type.in' => 'El tipo de personalidad seleccionado no es válido.',
@@ -156,8 +162,6 @@ class UpdatePatientRequest extends FormRequest
             'ejemplo_coherencia.pregunta.required' => 'La pregunta del ejemplo de coherencia es obligatoria.',
             'ejemplo_coherencia.coherente.required' => 'La respuesta coherente es obligatoria.',
             'ejemplo_coherencia.incoherente.required' => 'La respuesta incoherente es obligatoria.',
-            'verbosity_custom' => 'descripción de verbosidad personalizada',
-            'knowledge_custom' => 'descripción de conocimiento médico personalizada',
 
             'subject_id.required' => 'Debes seleccionar una asignatura.',
             'subject_id.exists' => 'La asignatura seleccionada no existe.',
@@ -201,6 +205,9 @@ class UpdatePatientRequest extends FormRequest
             'attendee_type' => 'tipo de consulta',
             'companion_name' => 'nombre del acompañante',
             'companion_relation' => 'relación del acompañante',
+            'personality_custom' => 'descripción de personalidad personalizada',
+            'verbosity_custom' => 'descripción de verbosidad personalizada',
+            'knowledge_custom' => 'descripción de conocimiento médico personalizada',
         ];
     }
 
@@ -209,16 +216,19 @@ class UpdatePatientRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        // Limpiar síntomas vacíos
-        if ($this->has('symptoms')) {
+        // Limpiar síntomas vacíos (verificando tipos para evitar Error 500)
+        if ($this->has('symptoms') && is_array($this->symptoms)) {
             $symptoms = array_filter($this->symptoms, function ($symptom) {
-                return !empty($symptom['name']);
+                return is_array($symptom) && !empty($symptom['name']);
             });
             $this->merge(['symptoms' => array_values($symptoms)]);
         }
+
         // Limpiar frases límite vacías
-        if ($this->has('frases_limite')) {
-            $frases = array_filter($this->frases_limite ?? [], fn($f) => !empty(trim($f)));
+        if ($this->has('frases_limite') && is_array($this->frases_limite)) {
+            $frases = array_filter($this->frases_limite, function ($f) {
+                return is_string($f) && !empty(trim($f));
+            });
             $this->merge(['frases_limite' => array_values($frases)]);
         }
     }

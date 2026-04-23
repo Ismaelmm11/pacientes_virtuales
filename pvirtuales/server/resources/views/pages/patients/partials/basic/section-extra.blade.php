@@ -23,7 +23,7 @@
                 <span class="help-tooltip-bubble">
                     <strong>¿Para qué sirve?</strong>
                     Reglas adicionales en lenguaje natural para comportamientos muy específicos del caso.
-                    <div class="example">📝 "Si el médico niega la baja, el paciente se indigna y amenaza con quejarse"
+                    <div class="example">📝 "Si el médico niega la baja, el paciente se indigna y amenaza con irse"
                     </div>
                     <div class="example">📝 "Hacia el final de la consulta, pregunta si tendrá que quedarse ingresado"
                     </div>
@@ -42,7 +42,7 @@
                 <span class="help-tooltip-icon">?</span>
                 <span class="help-tooltip-bubble">
                     <strong>¿Para qué sirve?</strong>
-                    Las frases que dirá el paciente cuando le preguntan por datos que no tiene. Hacen el personaje más
+                    Las frases que dirá el paciente cuando le preguntan por datos que no tiene y no puede improvisar. Hacen el personaje más
                     natural.
                     <div class="example">📝 "No lo sé, eso lo tenéis vosotros en el ordenador"</div>
                     <div class="example">📝 "Ni idea, nadie me ha dicho eso"</div>
@@ -57,7 +57,7 @@
                         <div class="cp-dynamic-item-field">
                             <label>Frase</label>
                             <input type="text" name="frases_limite[{{ $i }}]" value="{{ $frase }}"
-                                placeholder="Ej: No lo sé, eso lo tenéis vosotros en el ordenador">
+                                placeholder="Ej: No tengo ni la más menor idea de eso">
                         </div>
                     </div>
                     <button type="button" class="cp-btn-remove" onclick="removeItem(this)">
@@ -80,8 +80,7 @@
                 <span class="help-tooltip-icon">?</span>
                 <span class="help-tooltip-bubble">
                     <strong>¿Para qué sirve?</strong>
-                    Le enseña a la IA cómo improvisar respuestas coherentes con el personaje cuando el estudiante hace
-                    preguntas no cubiertas.
+                    Un ejemplo concreto que muestre la diferencia entre una respuesta coherente e incoherente del paciente a una misma pregunta. Para un correcto funcionamiento hay que poner una pregunta que se espere que pregunte el doctor y enseñar a la IA como debe responder a eso.
                     <div class="example">📝 Pregunta: "¿Qué ha desayunado hoy el niño?"</div>
                     <div class="example">✅ Coherente: "Apenas ha querido un poco de leche, está sin ganas."</div>
                     <div class="example">❌ Incoherente: "Se ha comido un tazón de cereales con fruta."</div>

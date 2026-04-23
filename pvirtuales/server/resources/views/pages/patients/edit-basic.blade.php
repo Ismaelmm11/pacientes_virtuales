@@ -22,6 +22,7 @@
 
     <x-slot name="styles">
         <link href="{{ asset('css/create-patient.css') }}" rel="stylesheet">
+        <link rel="stylesheet" href="{{ asset('css/modal.css') }}">
     </x-slot>
 
     <x-slot name="topbar">
@@ -36,10 +37,11 @@
                 </div>
             </div>
             <div class="topbar-right">
-                <a href="{{ route('teacher.patients.preview', $patient) }}" class="btn btn-ghost btn-sm">
+                <a href="{{ route('teacher.patients.preview', $patient) }}{{ request('origen') ? '?origen=' . request('origen') : '' }}"
+                    class="btn btn-ghost btn-sm">
                     <i data-lucide="x"></i>
                     Cancelar
-                </a>
+                    </a>
             </div>
         </div>
     </x-slot>
@@ -67,7 +69,7 @@
             @endif
 
             {{-- Formulario --}}
-            <form action="{{ route('teacher.patients.update', $patient) }}" method="POST" id="patientForm">
+            <form action="{{ route('teacher.patients.update', $patient) }}{{ request('origen') ? '?origen=' . request('origen') : '' }}" method="POST" id="patientForm">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="mode" value="basic">
@@ -80,9 +82,11 @@
 
                 {{-- Botonera --}}
                 <div class="cp-form-actions">
-                    <a href="{{ route('teacher.patients.index') }}" class="btn btn-ghost">
+                    <a href="{{ route('teacher.patients.preview', $patient) }}{{ request('origen') ? '?origen=' . request('origen') : '' }}"
+                        class="btn btn-ghost">
                         Cancelar
                     </a>
+
                     <button type="submit" class="btn btn-primary btn-lg">
                         <i data-lucide="sparkles"></i>
                         Guardar Cambios
@@ -134,6 +138,23 @@
         </aside>
 
     </div>
+
+    {{-- Modal de confirmación al quitar texto personalizado --}}
+    <div class="sim-modal-overlay" id="customTextModal">
+        <div class="sim-modal">
+            <div class="sim-modal-icon" style="background: rgba(231,76,60,0.12); color: var(--color-danger);">
+                <i data-lucide="alert-triangle" style="width:26px;height:26px;"></i>
+            </div>
+            <div class="sim-modal-title">¿Volver al texto automático?</div>
+            <p class="sim-modal-body">Se perderá el texto personalizado que has escrito. Esta acción no se puede
+                deshacer.</p>
+            <div class="sim-modal-actions">
+                <button class="btn btn-ghost btn-sm" onclick="closeCustomTextModal()">Cancelar</button>
+                <button class="btn btn-primary btn-sm" id="btnConfirmCustomText">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
 
     <x-slot name="scripts">
         <script src="{{ asset('js/create-patient-basic.js') }}"></script>

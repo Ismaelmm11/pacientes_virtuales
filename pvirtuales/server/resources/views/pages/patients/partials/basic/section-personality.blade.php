@@ -21,10 +21,8 @@
                 <span class="help-tooltip-icon">?</span>
                 <span class="help-tooltip-bubble">
                     <strong>¿Para qué sirve?</strong>
-                    Define el estado emocional dominante del paciente durante toda la consulta.
-                    <div class="example">📝 "Colaborador" → Ideal para introducir la anamnesis básica</div>
-                    <div class="example">📝 "Agresivo" → El estudiante practica gestión de conflictos</div>
-                    <div class="example">📝 "Minimizador" → El estudiante debe insistir para obtener información</div>
+                    Define el estado emocional dominante del paciente durante toda la consulta. Al seleccionar una personalidad, se muestra un texto explicando la personalidad seleccionada,
+                    además es posible personalizar ese texto para afinar aún más el comportamiento del paciente.
                 </span>
             </span>
         </div>
@@ -78,10 +76,7 @@
                     <span class="help-tooltip-icon">?</span>
                     <span class="help-tooltip-bubble">
                         <strong>¿Para qué sirve?</strong>
-                        Controla cuánta información ofrece el paciente en cada respuesta.
-                        <div class="example">📝 Nivel 1 → "Sí." "No." "Aquí."</div>
-                        <div class="example">📝 Nivel 3 → Respuestas normales y equilibradas</div>
-                        <div class="example">📝 Nivel 5 → Se extiende y divaga con anécdotas</div>
+                        Controla cuánta información ofrece el paciente en cada respuesta. Cada nivel muestra el texto que describe el comportamiento del paciente para ese nivel, pero es posible personalizarlo para afinar aún más el comportamiento.
                     </span>
                 </span>
             </div>
@@ -110,10 +105,7 @@
                     <span class="help-tooltip-icon">?</span>
                     <span class="help-tooltip-bubble">
                         <strong>¿Para qué sirve?</strong>
-                        Determina el vocabulario con el que el paciente describe sus síntomas.
-                        <div class="example">📝 Nivel 1 → "Me duele aquí", "tengo la tripa revuelta"</div>
-                        <div class="example">📝 Nivel 3 → "Tengo hipertensión", "me recetaron antiinflamatorios"</div>
-                        <div class="example">📝 Nivel 5 → "Dolor precordial opresivo con irradiación a MSI"</div>
+                        Determina el vocabulario con el que el paciente describe sus síntomas, por cada nivel se muestra un texto que describe el tipo de lenguaje que usa el paciente, pero es posible personalizarlo para afinar aún más el comportamiento.
                     </span>
                 </span>
             </div>

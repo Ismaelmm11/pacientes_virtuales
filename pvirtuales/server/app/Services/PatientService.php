@@ -195,6 +195,7 @@ class PatientService
             'medical_knowledge' => $knowledgeLevel,
             'hidden_concerns' => $psychology?->preocupaciones_ocultas,
             'conflicto_interno' => $psychology?->conflicto_interno,
+            'personality' => $this->getEmotionalDefaults($personality),
             'personality_custom' => $storedPersonality !==
                 $this->getEmotionalDefaults($personality)['frase']
                 ? $storedPersonality : null,

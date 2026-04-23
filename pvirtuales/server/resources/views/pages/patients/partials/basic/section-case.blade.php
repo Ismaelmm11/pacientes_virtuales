@@ -41,7 +41,7 @@
                 <span class="help-tooltip-icon">?</span>
                 <span class="help-tooltip-bubble">
                     <strong>¿Para qué sirve?</strong>
-                    El nombre del caso clínico. No tiene por qué ser un nombre real, sino una etiqueta que identifique
+                    El nombre del caso clínico se trata de una etiqueta que identifica el caso.
                 </span>
             </span>
         </div>
@@ -57,17 +57,15 @@
                 <span class="help-tooltip-icon">?</span>
                 <span class="help-tooltip-bubble">
                     <strong>¿Para qué sirve?</strong>
-                    Una frase corta que describe quién es el personaje. Se combina con el nombre para construir el
-                    encabezado del prompt: <em>"Roberto, camionero estresado"</em>. Ayuda a la IA a entender de un
-                    vistazo la esencia del personaje.
+                    Una frase corta que describe y resuma un poco el caso y el paciente del caso.
                     <div class="example">📝 "Camionero estresado"</div>
-                    <div class="example">📝 "Niño con fiebre alta"</div>
+                    <div class="example">📝 "Niño de 8 años acompañade de su padre"</div>
                     <div class="example">📝 "Paciente hipocondriaco"</div>
                 </span>
             </span>
         </div>
         <input type="text" id="patient_description" name="patient_description" value="{{ old('patient_description') }}"
-            placeholder="Ej: Camionero estresado">
+            placeholder="Ej: Paciente con dolor de cabeza" required>
     </div>
 
     {{-- Objetivos de aprendizaje --}}
@@ -80,13 +78,12 @@
                     <strong>¿Para qué sirve?</strong>
                     Define qué competencias debe desarrollar el estudiante. La IA guiará sutilmente la conversación para
                     que estas áreas sean relevantes, sin romper el personaje.
-                    <div class="example">📝 "Realizar anamnesis cardiovascular completa, identificar factores de riesgo
-                        y signos de alarma"</div>
+                    <div class="example">📝 "Hablar con un paciente nervioso y tratar de calmarlo para poder ayudarlo"</div>
                 </span>
             </span>
         </div>
         <textarea id="learning_objectives" name="learning_objectives"
-            placeholder="Ej: Realizar anamnesis cardiovascular completa, identificar signos de alarma">{{ old('learning_objectives') }}</textarea>
+            placeholder="Ej: Identificar los síntomas clave">{{ old('learning_objectives') }}</textarea>
     </div>
 
 </div>

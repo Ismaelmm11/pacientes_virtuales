@@ -24,10 +24,12 @@
                 </div>
             </div>
             <div class="topbar-right">
-                <a href="{{ route('teacher.patients.preview', $patient) }}" class="btn btn-ghost btn-sm">
+                <a href="{{ route('teacher.patients.preview', $patient) }}{{ request('origen') ? '?origen=' . request('origen') : '' }}"
+                    class="btn btn-ghost btn-sm">
                     <i data-lucide="arrow-left"></i>
                     Volver al Paciente
                 </a>
+
                 @if(!$patient->is_published)
                     <form action="{{ route('teacher.patients.publish', $patient) }}" method="POST" class="cp-form-inline">
                         @csrf
@@ -48,20 +50,6 @@
             </div>
         </div>
     </x-slot>
-
-    @if(session('success'))
-        <div class="cp-alert-success">
-            <div class="cp-alert-success-icon"><i data-lucide="circle-check"></i></div>
-            <div class="cp-alert-success-text">{{ session('success') }}</div>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="cp-alert-error">
-            <div class="cp-alert-icon"><i data-lucide="circle-alert"></i></div>
-            <div class="cp-alert-body">{{ session('error') }}</div>
-        </div>
-    @endif
 
     <div class="create-patient-layout">
         <div class="create-patient-main">
@@ -92,6 +80,13 @@
                                         Selecciona "Ilimitados" si no quieres restringirlo.
                                     </span>
                                 </span>
+                                {{-- <label>
+                                    <input type="checkbox" name="is_exam" value="1" {{ old('is_exam', $patient->is_exam
+                                    ?? false) ? 'checked' : '' }}>
+                                    Es un paciente de examen (los alumnos no verán su nota hasta que publiques los
+                                    resultados)
+                                </label> ---}}
+
                             </div>
 
                             {{-- Checkbox para activar intentos ilimitados --}}

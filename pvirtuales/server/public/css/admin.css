@@ -1,0 +1,442 @@
+/*
+|--------------------------------------------------------------------------
+| admin.css — Panel de Administración
+|--------------------------------------------------------------------------
+|
+| Estilos específicos del panel de administrador.
+| Complementa style.css y dashboard.css sin sobreescribirlos.
+|
+*/
+
+/* ==========================================================================
+   1. GRID DE DOS COLUMNAS
+   Para los rankings lado a lado en el dashboard
+   ========================================================================== */
+
+.admin-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+@media (max-width: 900px) {
+    .admin-two-col {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Estado de carga de la tabla */
+.table-loading {
+    opacity: 0.45;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+/* ==========================================================================
+   2. FILA CON NÚMERO DE RANKING
+   ========================================================================== */
+
+.admin-rank-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-rank-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-surface-alt);
+    border: 1.5px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.73rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ==========================================================================
+   3. FILTROS DE LISTADO
+   ========================================================================== */
+
+.admin-filters {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+/* Agrupar derecha de los filtros */
+.admin-filters-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.admin-filter-tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.admin-filter-tab {
+    padding: 6px 14px;
+    border-radius: var(--radius-md);
+    font-size: 0.83rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    transition: var(--transition-fast);
+    border: 1px solid transparent;
+}
+
+.admin-filter-tab:hover {
+    background: var(--color-surface-alt);
+    color: var(--color-text);
+}
+
+.admin-filter-tab.active {
+    background: var(--color-surface-alt);
+    border-color: var(--color-border);
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.admin-filter-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 365px;
+}
+
+.admin-filter-search > i {
+    position: absolute;
+    left: 12px;
+    width: 15px;
+    height: 15px;
+    color: var(--color-text-muted);
+    pointer-events: none;
+}
+
+.admin-search-input {
+    width: 100%;
+    padding: 8px 36px 8px 36px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.88rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    transition: var(--transition-fast);
+}
+
+.admin-search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(91, 231, 196, 0.15);
+}
+
+.admin-search-input::placeholder {
+    color: var(--color-text-subtle);
+}
+
+.admin-search-clear {
+    position: absolute;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    border-radius: var(--radius-sm);
+    transition: var(--transition-fast);
+}
+
+.admin-search-clear:hover {
+    color: var(--color-danger);
+    background: rgba(231, 76, 60, 0.08);
+}
+
+/* Ocultar botón limpiar búsqueda cuando no hay texto */
+.admin-search-clear.hidden {
+    display: none;
+}
+
+.admin-search-clear i {
+    width: 13px;
+    height: 13px;
+}
+
+/* ==========================================================================
+   4. AVATAR DE USUARIO EN TABLA
+   ========================================================================== */
+
+.admin-user-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-user-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ==========================================================================
+   5. FOOTER DE PAGINACIÓN
+   ========================================================================== */
+
+.admin-pagination-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pagination-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ==========================================================================
+   6. SELECTOR DE REGISTROS POR PÁGINA
+   ========================================================================== */
+
+.admin-per-page {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.83rem;
+    color: var(--color-text-muted);
+}
+
+.admin-per-page select {
+    padding: 5px 10px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.83rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.admin-per-page select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(91, 231, 196, 0.15);
+}
+
+/* ==========================================================================
+   7. PERFIL DE USUARIO
+   ========================================================================== */
+
+.admin-profile-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xl);
+    padding: var(--spacing-xl);
+    flex-wrap: wrap;
+}
+
+.admin-profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+    color: white;
+    font-size: 1.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    box-shadow: var(--shadow-primary);
+}
+
+.admin-profile-avatar img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.admin-profile-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.admin-profile-name {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin-bottom: 8px;
+}
+
+.admin-profile-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.admin-profile-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-shrink: 0;
+}
+
+/* ==========================================================================
+   8. MODAL DE EDICIÓN
+   ========================================================================== */
+
+.admin-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
+}
+
+.admin-modal-overlay.active {
+    display: flex;
+}
+
+.admin-modal {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    max-width: 520px;
+    animation: modalIn 0.18s ease;
+}
+
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: translateY(-12px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.admin-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.admin-modal-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.admin-modal-title svg {
+    width: 18px;
+    height: 18px;
+    color: var(--color-primary);
+}
+
+.admin-modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-fast);
+}
+
+.admin-modal-close:hover {
+    background: var(--color-surface-alt);
+    color: var(--color-text);
+}
+
+.admin-modal-close svg {
+    width: 16px;
+    height: 16px;
+}
+
+.admin-modal-body {
+    padding: var(--spacing-xl);
+}
+
+.admin-modal-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+.admin-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.admin-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface-alt);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+/* Icono de asignatura en detalle (equivalente al avatar de usuario) */
+.admin-subject-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-xl);
+    background: linear-gradient(135deg, rgba(91,231,196,0.15) 0%, rgba(79,193,233,0.15) 100%);
+    border: 2px solid rgba(91,231,196,0.3);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.admin-subject-icon svg {
+    width: 36px;
+    height: 36px;
+}

@@ -204,6 +204,9 @@ class PromptGeneratorService
     {
         $lines = [];
 
+
+        $comunicacion = (array) $psychology->caracteristicas_comunicacion;
+
         // --- Encabezado del personaje ---
         $titulo = strtoupper($patient->case_title);
         if (!empty($patient->patient_description)) {
@@ -232,7 +235,8 @@ class PromptGeneratorService
         $lines[] = "";
 
         // Estado emocional dominante
-        $lines[] = "**Estado emocional dominante:** {$psychology->estado_emocional_frase}";
+        $personalidad = strtoupper($comunicacion['personalidad']) ?? 'COLABORADOR';
+        $lines[] = "**Estado emocional dominante: {$personalidad}** {$psychology->estado_emocional_frase}";
         $lines[] = "";
 
         // Por qué se siente así
@@ -248,7 +252,6 @@ class PromptGeneratorService
         }
 
         // Estilo de comunicación
-        $comunicacion = (array) $psychology->caracteristicas_comunicacion;
         if (!empty($comunicacion['descripcion_verbosidad'])) {
             $lines[] = "**Estilo de comunicación:** {$comunicacion['descripcion_verbosidad']}";
             $lines[] = "";
@@ -545,8 +548,16 @@ class PromptGeneratorService
                 if (!empty($s['mentira'])) {
                     $lines[] = "- {$base} → En su lugar dices: *\"{$s['mentira']}\"*";
                 } else {
-                    $lines[] = "- {$base} → Inventa una mentira coherente con tu personaje y mantenla hasta el final.";
+                    $instruccionMentira = implode("\n", [
+                        "  Si el estudiante pregunta directamente, debes mentir. Elige la estrategia más coherente con tu personalidad y la naturaleza del tema:",
+                        "  - Si es algo socialmente mal visto (tabaco, alcohol, drogas, mala adherencia): tiende a minimizar antes que negar. Ej.: *\"fumo poco, algún cigarrillo suelto\"* cuando en realidad fumas un paquete diario.",
+                        "  - Si es algo que te avergüenza o asusta reconocer: niega directamente la primera vez, pero si el estudiante repregunta con tacto, puedes ceder parcialmente.",
+                        "  - Si te sientes juzgado o incómodo: desvía antes de responder. Ej.: *\"¿eso qué tiene que ver con lo que me pasa?\"*",
+                        "  Mantén la mentira coherente durante toda la consulta. No confieses la verdad salvo que el estudiante use técnicas de entrevista motivacional o pregunte de forma muy específica y empática.",
+                    ]);
+                    $lines[] = "- {$base} →\n{$instruccionMentira}";
                 }
+
             }
             $lines[] = "";
         }
@@ -712,8 +723,17 @@ class PromptGeneratorService
     {
         $mentira = $item['mentira'] ?? null;
 
-        return !empty($mentira)
-            ? "MIENTES sobre esto. En su lugar dices: *\"{$mentira}\"*. Mantén esta mentira durante toda la consulta."
-            : "MIENTES sobre esto. Inventa una mentira coherente con tu personaje y mantenla durante toda la consulta.";
+        if (!empty($mentira)) {
+            return "MIENTES sobre esto. En su lugar dices: *\"{$mentira}\"*. Mantén esta mentira durante toda la consulta.";
+        }
+
+        return implode("\n", [
+            "Debes mentir sobre esto. Elige la estrategia más coherente con tu personalidad y la naturaleza del tema:",
+            "  - Si es algo socialmente mal visto (tabaco, alcohol, drogas, mala adherencia): tiende a minimizar antes que negar. Ej.: *\"fumo poco, algún cigarrillo suelto\"* cuando en realidad fumas un paquete diario.",
+            "  - Si es algo que te avergüenza o asusta reconocer: niega directamente la primera vez, pero si el estudiante repregunta con tacto, puedes ceder parcialmente.",
+            "  - Si te sientes juzgado o incómodo: desvía antes de responder. Ej.: *\"¿eso qué tiene que ver con lo que me pasa?\"*",
+            "Mantén la mentira coherente durante toda la consulta. No confieses la verdad salvo que el estudiante use técnicas de entrevista motivacional o pregunte de forma muy específica y empática.",
+        ]);
     }
+
 }

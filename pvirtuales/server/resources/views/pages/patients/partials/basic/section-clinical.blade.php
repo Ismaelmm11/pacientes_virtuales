@@ -41,14 +41,14 @@
                 <span class="help-tooltip-icon">?</span>
                 <span class="help-tooltip-bubble">
                     <strong>¿Para qué sirve?</strong>
-                    La respuesta a la pregunta "¿qué le trae por aquí?". Escríbelo como lo diría el paciente.
-                    <div class="example">📝 "¡Que no me pasa nada! Son tonterías de mi mujer."</div>
+                    La respuesta a la pregunta "¿qué le trae por aquí? o ¿que le ocurre?". Escríbelo como lo diría el paciente.
+                    <div class="example">📝 "Mira doctor me he despertado vomitando y prácticamente no me puedo mover."</div>
                     <div class="example">📝 "Me duele mucho la rodilla derecha desde que me caí el martes."</div>
                 </span>
             </span>
         </div>
         <textarea id="motivo_consulta" name="motivo_consulta" required
-            placeholder="Ej: Me duele el pecho desde hace tres días, sobre todo cuando subo escaleras. Se me va al brazo izquierdo.">{{ old('motivo_consulta') }}</textarea>
+            placeholder="Ej: Me duele el pecho desde hace tres días, sobre todo cuando intento moverme.">{{ old('motivo_consulta') }}</textarea>
     </div>
 
     {{-- Síntomas con revelación --}}
@@ -61,10 +61,11 @@
                     <strong>¿Para qué sirve?</strong>
                     Los síntomas del paciente. Para cada uno defines cuándo lo revela: esto convierte la simulación en
                     un ejercicio educativo real.
-                    <div class="example">📝 "Dolor en el pecho" → Espontáneamente</div>
-                    <div class="example">📝 "Dificultad para respirar" → Si le preguntan</div>
-                    <div class="example">📝 "Bebe 3-4 carajillos" → Miente → "Lo normal, lo que bebe cualquier español"
-                    </div>
+                    <div class="example">📝 <strong>Espontáneamente</strong> → Lo revela sin necesidad de que el doctor pregunte</div>
+                    <div class="example">📝 <strong>Si le preguntan</strong> → Solo lo revela cuando el doctor pregunta sobre el tema</div>
+                    <div class="example">📝 <strong>Lo oculta</strong> → No admite el síntoma, lo va a negar o a evitar la pregunta</div>
+                    <div class="example">📝 <strong>Miente</strong> → Se le dará información falsa al doctor</div>
+                    <div class="example">📝 <strong>Exagera</strong> → Se describe de forma dramática, mucho más intenso de lo que es realmente</div>
                 </span>
             </span>
         </div>
@@ -127,14 +128,15 @@
                 <span class="help-tooltip-bubble">
                     <strong>¿Para qué sirve?</strong>
                     El diagnóstico que el paciente NO sabe. Se lo damos a la IA para mantener coherencia interna, pero
-                    <strong>nunca lo verbalizará</strong> al estudiante.
-                    <div class="example">📝 "Síndrome coronario agudo — Angina inestable"</div>
-                    <div class="example">📝 "Simulación. No tiene patología real. Quiere la baja."</div>
+                    <strong>nunca se lo dirá</strong> al estudiante.
+                    <div class="example">📝 "Gastroenteritis"</div>
+                    <div class="example">📝 "Ansiedad"</div>
+                    <div class="example">📝 "Insuficiencia cardíaca"</div>
                 </span>
             </span>
         </div>
         <input type="text" id="real_diagnosis" name="real_diagnosis" value="{{ old('real_diagnosis') }}"
-            placeholder="Ej: Síndrome coronario agudo — Angina inestable" required>
+            placeholder="Ej: Insuficiencia cardíaca" required>
     </div>
 
     {{-- Antecedentes médicos --}}
@@ -152,7 +154,7 @@
             </span>
         </div>
         <textarea id="medical_history" name="medical_history"
-            placeholder="Ej: Hipertensión arterial hace 10 años, diabetes tipo 2. Alérgico a la penicilina.">{{ old('medical_history') }}</textarea>
+            placeholder="Ej: Hipertensión arterial hace 10 años, diabetes tipo 2. Alérgico a los gatos.">{{ old('medical_history') }}</textarea>
     </div>
 
     {{-- Medicación actual --}}
@@ -163,8 +165,8 @@
                 <span class="help-tooltip-icon">?</span>
                 <span class="help-tooltip-bubble">
                     <strong>¿Para qué sirve?</strong>
-                    Fármacos que toma el paciente y su adherencia.
-                    <div class="example">📝 Enalapril 10mg → "Cuando me duele la cabeza"</div>
+                    Fármacos que toma el paciente y su adherencia, es decir cada cuanto lo toma.
+                    <div class="example">📝 Paracetamol 500mg → "Cuando me duele la cabeza"</div>
                     <div class="example">📝 Metformina 850mg → "Una vez al día"</div>
                 </span>
             </span>
@@ -176,12 +178,12 @@
                         <div class="cp-dynamic-item-field">
                             <label>Medicamento</label>
                             <input type="text" name="medications[{{ $i }}][name]" value="{{ $med['name'] ?? '' }}"
-                                placeholder="Ej: Enalapril 10mg">
+                                placeholder="Ej: Paracetamol 500mg">
                         </div>
                         <div class="cp-dynamic-item-field">
                             <label>Cuándo lo toma</label>
                             <input type="text" name="medications[{{ $i }}][frequency]" value="{{ $med['frequency'] ?? '' }}"
-                                placeholder="Ej: Una vez al día / Cuando me duele la cabeza">
+                                placeholder="Ej: Una vez al día o cuando me acuerdo">
                         </div>
                     </div>
                     <button type="button" class="cp-btn-remove" onclick="removeItem(this)">
@@ -205,7 +207,7 @@
                 <span class="help-tooltip-icon">?</span>
                 <span class="help-tooltip-bubble">
                     <strong>¿Para qué sirve?</strong>
-                    Los pacientes suelen minimizar o mentir sobre esto. Gran valor pedagógico.
+                    Hábitos tóxicos que tiene el paciente en su día a día. Tabaco, alcohol, drogas, juego... Para cada uno defines cuándo lo revela.
                     <div class="example">📝 Tabaco → "2 paquetes/día desde los 18" → Si le preguntan</div>
                     <div class="example">📝 Alcohol → "3-4 carajillos al día" → Miente → "Lo normal"</div>
                 </span>
@@ -218,7 +220,7 @@
                         <div class="cp-dynamic-item-field">
                             <label>Vicio</label>
                             <input type="text" name="vices[{{ $i }}][name]" value="{{ $vice['name'] ?? '' }}"
-                                placeholder="Ej: Tabaco: 2 paquetes al día">
+                                placeholder="Ej: 2 paquete de tabaco al día">
                         </div>
                         <div class="cp-dynamic-item-field">
                             <label>Cuándo lo revela</label>
