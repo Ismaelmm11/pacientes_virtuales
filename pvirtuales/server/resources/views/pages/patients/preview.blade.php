@@ -106,8 +106,6 @@
                         <p class="cp-action-card-title">Cuestionario</p>
                     </div>
                     <p class="cp-action-card-desc">Crea o edita las preguntas de evaluación para este caso clínico.</p>
-
-                        poder publicar.</p>
                     <div class="cp-action-card-footer">
                         <a href="{{ route('teacher.patients.test', $patient) }}{{ request('origen') ? '?origen=' . request('origen') : '' }}"
                             class="btn btn-ghost btn-sm">
@@ -275,7 +273,9 @@
 
             function goToTest() {
                 const ai = document.getElementById('testAiSelect').value;
-                window.location.href = `/simulacion/${ai}/{{ $patient->id }}`;
+                // Después (usa el helper de Laravel, respeta el subdirectorio)
+                const base = '{{ route("simulation.start", ["aiModel" => "__AI__", "patientId" => $patient->id]) }}';
+                window.location.href = base.replace('__AI__', ai);
             }
         </script>
     </x-slot>
