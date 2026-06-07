@@ -38,7 +38,7 @@
                     Bienvenido, {{ Auth::user()->first_name }} 👋
                 </div>
                 <div class="topbar-subtitle">
-                    {{ now()->locale('es')->isoFormat('dddd, D [de] MMMM [de] YYYY') }}
+                    {{ now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY') }}
                 </div>
             </div>
             <div class="topbar-right">
@@ -87,17 +87,6 @@
                 <div class="stat-card-label">Pacientes creados</div>
             </div>
         </div>
-
-        <div class="stat-card">
-            <div class="stat-card-icon danger">
-                <i data-lucide="message-square"></i>
-            </div>
-            <div class="stat-card-info">
-                <div class="stat-card-value">{{ $totalConsultations }}</div>
-                <div class="stat-card-label">Simulaciones realizadas</div>
-            </div>
-        </div>
-
     </div>
 
     {{-- ---- 2. PACIENTES RECIENTES ---- --}}
