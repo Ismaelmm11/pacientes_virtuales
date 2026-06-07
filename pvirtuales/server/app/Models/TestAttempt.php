@@ -26,6 +26,7 @@ class TestAttempt extends Model
     protected $fillable = [
         'user_id',
         'patient_id',
+        'ai_provider',
         'interview_transcript',
         'submitted_at',
         'final_score',

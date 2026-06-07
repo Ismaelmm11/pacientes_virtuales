@@ -145,6 +145,8 @@ class QuestionController extends Controller
         if ($patient->created_by_user_id !== Auth::id() && !Auth::user()->isAdmin()) {
             abort(403, 'No tienes permiso para gestionar este paciente.');
         }
+
+
     }
 
     /**

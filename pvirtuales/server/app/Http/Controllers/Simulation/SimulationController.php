@@ -36,6 +36,19 @@ class SimulationController extends Controller
         $patient = Patient::with(['knowledgeBase'])->findOrFail($patientId);
         $user = auth()->user();
 
+        $validProviders = ['openai', 'claude', 'gemini', 'grok', 'mistral'];
+
+        if ($user->isTeacher() || $user->isAdmin()) {
+            // RN-03: Los profesores eligen proveedor, pero se valida que sea uno conocido
+            if (!in_array($aiModel, $validProviders)) {
+                abort(400, 'Proveedor de IA no válido.');
+            }
+        } else {
+            // RN-02: El alumno nunca elige proveedor — se asigna uno al azar en servidor
+            $aiModel = $validProviders[array_rand($validProviders)];
+        }
+
+
         // ── Control de acceso para alumnos ──────────────────────────────────
         // Los profesores y admins pueden acceder siempre (para probar pacientes)
         if (!$user->isTeacher() && !$user->isAdmin()) {
@@ -94,14 +107,22 @@ class SimulationController extends Controller
         // ── Crear TestAttempt solo para alumnos ─────────────────────────────
         // Los profesores no generan registros; usan la simulación para probar
         if (!$user->isTeacher() && !$user->isAdmin()) {
-            $attempt = \App\Models\TestAttempt::create([
-                'user_id' => $user->id,
-                'patient_id' => $patient->id,
-            ]);
+            // RN-09: Si ya hay un intento en curso (no enviado aún), reutilizarlo
+            if ($pendingAttempt && is_null($pendingAttempt->submitted_at)) {
+                $attempt = $pendingAttempt;
+            } else {
+                // RN-06: Nuevo intento — persistir el proveedor asignado
+                $attempt = \App\Models\TestAttempt::create([
+                    'user_id' => $user->id,
+                    'patient_id' => $patient->id,
+                    'ai_provider' => $aiModel,
+                ]);
+            }
             Session::put('current_attempt_id', $attempt->id);
         } else {
             Session::forget('current_attempt_id');
         }
+
 
         return view('pages.simulation.chat', [
             'aiModel' => $aiModel,
