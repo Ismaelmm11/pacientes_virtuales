@@ -38,7 +38,7 @@
                     Bienvenido, {{ Auth::user()->first_name }} 👋
                 </div>
                 <div class="topbar-subtitle">
-                    {{ now()->isoFormat('dddd, D [de] MMMM [de] YYYY') }}
+                    {{ now()->locale('es')->isoFormat('dddd, D [de] MMMM [de] YYYY') }}
                 </div>
             </div>
             <div class="topbar-right">
